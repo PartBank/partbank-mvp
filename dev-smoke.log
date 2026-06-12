@@ -1,0 +1,47 @@
+
+> partbank@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1427ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 523ms (128 modules)
+(node:14604) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ○ Compiling /catalog ...
+ ✓ Compiled /catalog in 2.5s (765 modules)
+ ✓ Compiled in 313ms (345 modules)
+ GET /catalog 200 in 3133ms
+ ○ Compiling /orders ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (102kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (244kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled /orders in 2.3s (752 modules)
+ GET /orders 200 in 2581ms
+ ✓ Compiled /orders/[orderId] in 488ms (889 modules)
+ GET /orders/9dfdbbdd-094d-45b4-ba25-68655752f454 200 in 3797ms
+ ✓ Compiled /internal/dashboard in 149ms (893 modules)
+ GET /internal/dashboard 200 in 411ms
+ ✓ Compiled /internal/orders in 140ms (895 modules)
+ GET /internal/orders 200 in 339ms
+ ○ Compiling /internal/orders/[orderId] ...
+ ✓ Compiled /internal/orders/[orderId] in 765ms (1070 modules)
+ GET /internal/orders/9dfdbbdd-094d-45b4-ba25-68655752f454 200 in 4690ms
+ ✓ Compiled /internal/catalog in 244ms (1089 modules)
+ GET /internal/catalog 200 in 540ms
+ ✓ Compiled /internal/workshops in 238ms (1100 modules)
+ GET /internal/workshops 200 in 451ms
+ ✓ Compiled /internal/workshops/[workshopId] in 265ms (1107 modules)
+ GET /internal/workshops/c0663197-491c-4f10-9cdc-af660c4cdc47 200 in 811ms
+ ✓ Compiled /workshop/dashboard in 226ms (1110 modules)
+ GET /workshop/dashboard 200 in 496ms
+ ✓ Compiled /workshop/orders in 218ms (1112 modules)
+ GET /workshop/orders 200 in 528ms
+ ✓ Compiled /workshop/orders/[orderId] in 269ms (1119 modules)
+ GET /workshop/orders/9dfdbbdd-094d-45b4-ba25-68655752f454 200 in 844ms
+ ✓ Compiled /api/notifications in 186ms (120 modules)
+ GET /api/notifications 200 in 2176ms
+ GET /api/notifications 200 in 88ms
