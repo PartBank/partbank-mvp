@@ -46,7 +46,7 @@ In your Supabase dashboard → **Project Settings → API**:
 | Variable | Where to find |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Project API Keys → `anon` `public` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Project API Keys → `anon` `public` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Project API Keys → `service_role` (keep secret) |
 
 ---
@@ -60,9 +60,9 @@ In your Supabase dashboard → **Project Settings → API**:
 5. Open **Environment Variables** section — add all three:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL        = https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY   = eyJ...
-SUPABASE_SERVICE_ROLE_KEY       = eyJ...
+NEXT_PUBLIC_SUPABASE_URL             = https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = eyJ...
+SUPABASE_SERVICE_ROLE_KEY            = eyJ...
 ```
 
 6. Click **Deploy**
@@ -138,5 +138,5 @@ git push
 | Variable | Required | Scope |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Client + Server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Client + Server |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | ✅ | Client + Server |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Server only (never expose to client) |

@@ -38,7 +38,7 @@ Initialize a Next.js 14 project with the following setup:
 
 7. Create .env.local with these keys (empty values):
    NEXT_PUBLIC_SUPABASE_URL=
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
    SUPABASE_SERVICE_ROLE_KEY=
 
 8. Create .env.example with the same keys.
@@ -944,9 +944,9 @@ PART A — Seed Data
 
    a) Create the 3 demo auth users (document the process — can't insert into auth.users directly via SQL in most setups, so provide instructions):
       - Use Supabase dashboard or supabase CLI: supabase auth admin create-user
-      - internal@partbank.com / internal123 → metadata: { role: 'internal', full_name: 'Admin PartBank' }
-      - workshop@bengkel.com / workshop123 → metadata: { role: 'workshop', full_name: 'Maju Jaya Workshop' }
-      - buyer@buyer.com / buyer123 → metadata: { role: 'customer', full_name: 'Pak Budi Santoso' }
+      - internal@partbank.com / password → metadata: { role: 'internal', full_name: 'Admin PartBank' }
+      - workshop@bengkel.com / password → metadata: { role: 'workshop', full_name: 'Maju Jaya Workshop' }
+      - buyer@buyer.com / password → metadata: { role: 'customer', full_name: 'Pak Budi Santoso' }
 
    b) After users exist, seed.sql inserts:
       - Profiles for all 3 users
