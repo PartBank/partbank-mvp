@@ -1,7 +1,7 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type StorageBucket = 'receipts' | 'drawings' | 'references'
+export type StorageBucket = 'receipts' | 'drawings' | 'references' | 'brand-logos' | 'model-images'
 
 interface UploadArgs {
   bucket: StorageBucket
@@ -27,7 +27,7 @@ export async function uploadFile({
     if (error) return { path: null, error: error.message }
     return { path: data.path, error: null }
   } catch (e) {
-    return { path: null, error: e instanceof Error ? e.message : 'Upload gagal' }
+    return { path: null, error: e instanceof Error ? e.message : 'Upload failed' }
   }
 }
 
@@ -46,8 +46,14 @@ export async function getSignedUrl({
     if (error) return { url: null, error: error.message }
     return { url: data.signedUrl, error: null }
   } catch (e) {
-    return { url: null, error: e instanceof Error ? e.message : 'Gagal membuat URL' }
+    return { url: null, error: e instanceof Error ? e.message : 'Failed to create URL' }
   }
+}
+
+export function getPublicUrl(bucket: StorageBucket, path: string): string {
+  const admin = createAdminClient()
+  const { data } = admin.storage.from(bucket).getPublicUrl(path)
+  return data.publicUrl
 }
 
 export async function deleteFile({
@@ -62,6 +68,6 @@ export async function deleteFile({
     const { error } = await admin.storage.from(bucket).remove([path])
     return { error: error ? error.message : null }
   } catch (e) {
-    return { error: e instanceof Error ? e.message : 'Gagal menghapus file' }
+    return { error: e instanceof Error ? e.message : 'Failed to delete file' }
   }
 }

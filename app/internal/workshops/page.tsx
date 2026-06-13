@@ -17,12 +17,12 @@ import { WorkshopApprovalButtons } from '@/components/internal/WorkshopApprovalB
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/utils'
 
-export const metadata: Metadata = { title: 'PartBank — Manajemen Bengkel' }
+export const metadata: Metadata = { title: 'PartBank — Workshop Management' }
 
 const TABS = [
-  { key: 'pending', label: 'Menunggu Persetujuan' },
-  { key: 'active', label: 'Aktif' },
-  { key: 'all', label: 'Semua' },
+  { key: 'pending', label: 'Pending Approval' },
+  { key: 'active', label: 'Active' },
+  { key: 'all', label: 'All' },
 ] as const
 
 interface Props {
@@ -45,9 +45,9 @@ export default async function WorkshopsPage({ searchParams }: Props) {
   })
 
   return (
-    <div>
-      <PageHeader title="Manajemen Bengkel" subtitle="Verifikasi dan kelola bengkel mitra" />
-      <div className="p-6 space-y-4">
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="Workshop Management" subtitle="Verify and manage partner workshops" />
+      <div className="space-y-4">
         <div className="flex gap-1 border-b border-border">
           {TABS.map((t) => (
             <Link
@@ -70,12 +70,12 @@ export default async function WorkshopsPage({ searchParams }: Props) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nama Bengkel</TableHead>
+                  <TableHead>Workshop Name</TableHead>
                   <TableHead>Capability</TableHead>
                   <TableHead className="w-24">Tier</TableHead>
                   <TableHead className="w-28">Status</TableHead>
-                  <TableHead className="w-32">Daftar</TableHead>
-                  <TableHead className="w-48 text-right">Aksi</TableHead>
+                  <TableHead className="w-32">Joined</TableHead>
+                  <TableHead className="w-48 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,7 +94,7 @@ export default async function WorkshopsPage({ searchParams }: Props) {
                     <TableCell className="text-sm text-text-secondary">{w.tier}</TableCell>
                     <TableCell>
                       {w.is_verified ? (
-                        <Badge className="border-0 bg-green-100 text-green-800 text-xs">Aktif</Badge>
+                        <Badge className="border-0 bg-green-100 text-green-800 text-xs">Active</Badge>
                       ) : (
                         <Badge className="border-0 bg-amber-50 text-amber-700 text-xs">Pending</Badge>
                       )}
@@ -106,7 +106,7 @@ export default async function WorkshopsPage({ searchParams }: Props) {
                       {w.is_verified ? (
                         <Link href={`/internal/workshops/${w.id}`}>
                           <Button variant="outline" size="sm">
-                            Lihat Detail
+                            View
                           </Button>
                         </Link>
                       ) : (
@@ -119,7 +119,7 @@ export default async function WorkshopsPage({ searchParams }: Props) {
             </Table>
           </div>
         ) : (
-          <EmptyState title="Tidak ada bengkel pada filter ini" />
+          <EmptyState title="No workshops match this filter" />
         )}
       </div>
     </div>

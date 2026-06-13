@@ -1,46 +1,29 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { OrdersTable } from '@/components/internal/OrdersTable'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { StatusBadge } from '@/components/shared/StatusBadge'
-import { EmptyState } from '@/components/shared/EmptyState'
-import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { formatDate } from '@/lib/utils'
-import { shortId } from '@/lib/utils/format'
 import { NEEDS_INTERNAL_ACTION, TERMINAL_STATUSES } from '@/lib/types/order'
 import type { OrderStatus } from '@/lib/utils/status'
 
-export const metadata: Metadata = { title: 'PartBank — Semua Order' }
+export const metadata: Metadata = { title: 'PartBank — All Orders' }
 
 const TABS = [
-  { key: 'semua', label: 'Semua' },
-  { key: 'aksi', label: 'Perlu Aksi' },
-  { key: 'produksi', label: 'Dalam Produksi' },
-  { key: 'qc', label: 'QC' },
-  { key: 'selesai', label: 'Selesai' },
+  { key: 'all',        label: 'All' },
+  { key: 'action',     label: 'Needs Action' },
+  { key: 'production', label: 'In Production' },
+  { key: 'qc',         label: 'QC' },
+  { key: 'done',       label: 'Completed' },
 ] as const
 
 function matchesFilter(status: OrderStatus, filter: string): boolean {
   switch (filter) {
-    case 'aksi':
-      return NEEDS_INTERNAL_ACTION.includes(status)
-    case 'produksi':
-      return status === 'in_production'
-    case 'qc':
-      return status === 'pending_qc'
-    case 'selesai':
-      return TERMINAL_STATUSES.includes(status)
-    default:
-      return true
+    case 'action':     return NEEDS_INTERNAL_ACTION.includes(status)
+    case 'production': return status === 'in_production'
+    case 'qc':         return status === 'pending_qc'
+    case 'done':       return TERMINAL_STATUSES.includes(status)
+    default:           return true
   }
 }
 
@@ -49,93 +32,67 @@ interface Props {
 }
 
 export default async function InternalOrdersPage({ searchParams }: Props) {
-  const filter = searchParams.tab ?? 'semua'
+  const filter = searchParams.tab ?? 'all'
   const supabase = await createClient()
 
   const { data: orders } = await supabase
     .from('orders')
-    .select(
-      'id, status, created_at, parts(name), customer:profiles!orders_customer_id_fkey(full_name), workshops(name)'
-    )
+    .select('id, status, created_at, parts(name), customer:profiles!orders_customer_id_fkey(full_name), workshops(name)')
     .order('created_at', { ascending: false })
 
-  const filtered = (orders ?? []).filter((o) => matchesFilter(o.status as OrderStatus, filter))
+  const all = orders ?? []
+
+  const counts: Record<string, number> = {
+    all:        all.length,
+    action:     all.filter((o) => matchesFilter(o.status as OrderStatus, 'action')).length,
+    production: all.filter((o) => matchesFilter(o.status as OrderStatus, 'production')).length,
+    qc:         all.filter((o) => matchesFilter(o.status as OrderStatus, 'qc')).length,
+    done:       all.filter((o) => matchesFilter(o.status as OrderStatus, 'done')).length,
+  }
+
+  const filtered = all.filter((o) => matchesFilter(o.status as OrderStatus, filter))
 
   return (
-    <div>
-      <PageHeader title="Semua Order" subtitle="Kelola seluruh pesanan PartBank" />
-      <div className="p-6 space-y-4">
-        <div className="flex gap-1 border-b border-border">
-          {TABS.map((t) => (
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="Orders" />
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-border mb-5">
+        {TABS.map((t) => {
+          const isAction = t.key === 'action'
+          const count = counts[t.key]
+          const active = filter === t.key
+          return (
             <Link
               key={t.key}
               href={`/internal/orders?tab=${t.key}`}
               className={cn(
-                'px-3 py-2 text-sm border-b-2 -mb-px transition-colors',
-                filter === t.key
+                'flex items-center gap-1.5 px-3 py-2 text-sm border-b-2 -mb-px transition-colors',
+                active
                   ? 'border-navy-900 text-navy-900 font-medium'
                   : 'border-transparent text-text-secondary hover:text-text-primary'
               )}
             >
               {t.label}
+              {count > 0 && (
+                <span className={cn(
+                  'rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none',
+                  active
+                    ? 'bg-navy-100 text-navy-800'
+                    : isAction && count > 0
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-surface-secondary text-text-muted'
+                )}>
+                  {count}
+                </span>
+              )}
             </Link>
-          ))}
-        </div>
-
-        {filtered.length > 0 ? (
-          <div className="bg-white rounded-lg border border-border overflow-hidden overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-28">Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Part</TableHead>
-                  <TableHead>Bengkel</TableHead>
-                  <TableHead className="w-48">Status</TableHead>
-                  <TableHead className="w-32">Tanggal</TableHead>
-                  <TableHead className="w-24 text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((o) => {
-                  const part = Array.isArray(o.parts) ? o.parts[0] : o.parts
-                  const customer = Array.isArray(o.customer) ? o.customer[0] : o.customer
-                  const workshop = Array.isArray(o.workshops) ? o.workshops[0] : o.workshops
-                  return (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-mono text-xs text-text-secondary">
-                        {shortId(o.id)}
-                      </TableCell>
-                      <TableCell className="text-sm text-text-primary">
-                        {customer?.full_name ?? '—'}
-                      </TableCell>
-                      <TableCell className="text-sm text-text-primary">{part?.name ?? '—'}</TableCell>
-                      <TableCell className="text-sm text-text-secondary">
-                        {workshop?.name ?? '—'}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={o.status as OrderStatus} />
-                      </TableCell>
-                      <TableCell className="text-sm text-text-secondary">
-                        {formatDate(o.created_at)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/internal/orders/${o.id}`}>
-                          <Button variant="outline" size="sm">
-                            Detail
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <EmptyState title="Tidak ada order pada filter ini" />
-        )}
+          )
+        })}
       </div>
+
+      {/* Table */}
+      <OrdersTable orders={filtered} />
     </div>
   )
 }

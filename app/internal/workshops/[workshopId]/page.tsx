@@ -20,7 +20,7 @@ import { shortId } from '@/lib/utils/format'
 import type { OrderStatus } from '@/lib/utils/status'
 import type { WorkshopTier } from '@/lib/types/database.types'
 
-export const metadata: Metadata = { title: 'PartBank — Detail Bengkel' }
+export const metadata: Metadata = { title: 'PartBank — Workshop Detail' }
 
 interface Props {
   params: { workshopId: string }
@@ -44,11 +44,11 @@ export default async function WorkshopDetailPage({ params }: Props) {
     .order('created_at', { ascending: false })
 
   return (
-    <div>
-      <PageHeader title={workshop.name} subtitle="Detail bengkel mitra" />
-      <div className="p-6">
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title={workshop.name} subtitle="Partner workshop details" />
+      <div>
         <Link href="/internal/workshops?tab=active" className="text-sm text-navy-700 hover:underline mb-6 inline-block">
-          ← Kembali ke Manajemen Bengkel
+          ← Back to Workshop Management
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -57,7 +57,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
               <div className="flex items-center gap-2">
                 <p className="text-base font-semibold text-text-primary">{workshop.name}</p>
                 {workshop.is_verified ? (
-                  <Badge className="border-0 bg-green-100 text-green-800 text-xs">Terverifikasi</Badge>
+                  <Badge className="border-0 bg-green-100 text-green-800 text-xs">Verified</Badge>
                 ) : (
                   <Badge className="border-0 bg-amber-50 text-amber-700 text-xs">Pending</Badge>
                 )}
@@ -71,11 +71,11 @@ export default async function WorkshopDetailPage({ params }: Props) {
                 ))}
               </div>
               <p className="text-sm text-text-secondary">Tier: {workshop.tier}</p>
-              <p className="text-xs text-text-muted">Terdaftar {formatDate(workshop.created_at)}</p>
+              <p className="text-xs text-text-muted">Joined {formatDate(workshop.created_at)}</p>
             </div>
 
             <div className="bg-white rounded-lg border border-border p-5">
-              <p className="text-base font-medium text-text-primary mb-3">Riwayat Order</p>
+              <p className="text-base font-medium text-text-primary mb-3">Order History</p>
               {orders && orders.length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
@@ -84,7 +84,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
                         <TableHead className="w-28">Order ID</TableHead>
                         <TableHead>Part</TableHead>
                         <TableHead className="w-48">Status</TableHead>
-                        <TableHead className="w-32">Tanggal</TableHead>
+                        <TableHead className="w-32">Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -109,14 +109,14 @@ export default async function WorkshopDetailPage({ params }: Props) {
                   </Table>
                 </div>
               ) : (
-                <EmptyState title="Belum ada order untuk bengkel ini" />
+                <EmptyState title="No orders for this workshop yet" />
               )}
             </div>
           </div>
 
           <div>
             <div className="bg-white rounded-lg border border-border p-5">
-              <p className="text-base font-medium text-text-primary mb-3">Edit Bengkel</p>
+              <p className="text-base font-medium text-text-primary mb-3">Edit Workshop</p>
               <WorkshopEditor
                 workshopId={workshop.id}
                 initialTags={workshop.capability_tags ?? []}

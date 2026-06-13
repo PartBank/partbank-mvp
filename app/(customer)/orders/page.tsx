@@ -13,11 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatDate } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import { shortId } from '@/lib/utils/format'
 import type { OrderStatus } from '@/lib/utils/status'
 
-export const metadata: Metadata = { title: 'PartBank — Pesanan Saya' }
+export const metadata: Metadata = { title: 'PartBank — My Orders' }
 
 export default async function OrdersPage() {
   const supabase = await createClient()
@@ -32,19 +32,19 @@ export default async function OrdersPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div>
-      <PageHeader title="Pesanan Saya" subtitle="Daftar semua permintaan part Anda" />
-      <div className="p-6">
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="My Orders" subtitle="All your part requests" />
+      <div>
         {orders && orders.length > 0 ? (
           <div className="bg-white rounded-lg border border-border overflow-hidden overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-28">No. Order</TableHead>
+                  <TableHead className="w-28">Order No.</TableHead>
                   <TableHead>Part</TableHead>
-                  <TableHead className="w-36">Tanggal</TableHead>
+                  <TableHead className="w-48">Date</TableHead>
                   <TableHead className="w-48">Status</TableHead>
-                  <TableHead className="w-28 text-right">Aksi</TableHead>
+                  <TableHead className="w-28 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -59,7 +59,7 @@ export default async function OrdersPage() {
                         {part?.name ?? '—'}
                       </TableCell>
                       <TableCell className="text-sm text-text-secondary">
-                        {formatDate(order.created_at)}
+                        {formatDateTime(order.created_at)}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={order.status as OrderStatus} />
@@ -67,7 +67,7 @@ export default async function OrdersPage() {
                       <TableCell className="text-right">
                         <Link href={`/orders/${order.id}`}>
                           <Button variant="outline" size="sm">
-                            Lihat Detail
+                            View
                           </Button>
                         </Link>
                       </TableCell>
@@ -79,11 +79,11 @@ export default async function OrdersPage() {
           </div>
         ) : (
           <EmptyState
-            title="Belum ada pesanan"
-            description="Mulai dari katalog untuk membuat permintaan part."
+            title="No orders yet"
+            description="Start from the catalog to create a part request."
             action={
               <Link href="/catalog">
-                <Button className="bg-navy-900 hover:bg-navy-800 text-white">Buka Katalog</Button>
+                <Button className="bg-navy-900 hover:bg-navy-800 text-white">Browse Catalog</Button>
               </Link>
             }
           />

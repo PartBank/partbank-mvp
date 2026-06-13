@@ -15,9 +15,9 @@ export async function createOrder(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: 'Tidak terautentikasi.' }
+  if (!user) return { error: 'Not authenticated.' }
   const role = user.user_metadata?.role as UserRole | undefined
-  if (role !== 'customer') return { error: 'Hanya customer yang dapat membuat pesanan.' }
+  if (role !== 'customer') return { error: 'Only customers can place orders.' }
 
   const partId = String(formData.get('partId') ?? '').trim() || null
   const customPartName = String(formData.get('customPartName') ?? '').trim() || null
@@ -28,8 +28,16 @@ export async function createOrder(
   const photos = formData.getAll('photo')
 
   // One of partId or customPartName is required
-  if (!partId && !customPartName) return { error: 'Pilih part dari katalog atau isi nama part.' }
-  if (!partId && !truckInfo) return { error: 'Info truk wajib diisi untuk request part baru.' }
+  if (!partId && !customPartName) return { error: 'Select a part from the catalog or enter a part name.' }
+  if (!partId && !truckInfo) return { error: 'Truck information is required for a custom part request.' }
+
+  // File limits
+  const MAX_FILES = 5
+  const MAX_SIZE_BYTES = 5 * 1024 * 1024
+  const validPhotos = photos.filter((p): p is File => p instanceof File && p.size > 0)
+  if (validPhotos.length > MAX_FILES) return { error: `Maximum ${MAX_FILES} files allowed.` }
+  const oversized = validPhotos.find((f) => f.size > MAX_SIZE_BYTES)
+  if (oversized) return { error: `File "${oversized.name}" exceeds the 5MB limit.` }
 
   const admin = createAdminClient()
 
@@ -40,13 +48,17 @@ export async function createOrder(
     .single()
 
   let partName: string
+  let isKnownPart = false
   if (partId) {
-    const { data: part } = await admin.from('parts').select('id, name').eq('id', partId).single()
-    if (!part) return { error: 'Part tidak ditemukan.' }
+    const { data: part } = await admin.from('parts').select('id, name, drawing_url').eq('id', partId).single()
+    if (!part) return { error: 'Part not found.' }
     partName = part.name
+    isKnownPart = !!part.drawing_url
   } else {
     partName = customPartName!
   }
+
+  const initialStatus = isKnownPart ? 'finding_workshop' : 'pending_re_confirmation'
 
   const { data: order, error: orderErr } = await admin
     .from('orders')
@@ -58,14 +70,13 @@ export async function createOrder(
       truck_info: truckInfo,
       quantity,
       notes,
-      status: 'pending_re_confirmation',
+      status: initialStatus,
     })
     .select('id')
     .single()
-  if (orderErr || !order) return { error: orderErr?.message ?? 'Gagal membuat pesanan.' }
+  if (orderErr || !order) return { error: orderErr?.message ?? 'Failed to create order.' }
 
-  for (const photo of photos) {
-    if (!(photo instanceof File) || photo.size === 0) continue
+  for (const photo of validPhotos) {
     const path = `${order.id}/${Date.now()}-${photo.name}`
     const { error: upErr } = await uploadFile({
       bucket: 'references',
@@ -87,14 +98,18 @@ export async function createOrder(
     order_id: order.id,
     actor_id: user.id,
     from_status: null,
-    to_status: 'pending_re_confirmation',
-    notes: partId ? 'Order dibuat dari katalog' : 'Order custom — part belum ada di katalog',
+    to_status: initialStatus,
+    notes: isKnownPart
+      ? 'Known part — RE skipped, pending workshop assignment'
+      : partId
+        ? 'Order created from catalog'
+        : 'Custom order — part not in catalog',
   })
 
-  const notifSuffix = partId ? '' : ' (part baru, belum di katalog)'
+  const notifSuffix = partId ? (isKnownPart ? '' : '') : ' (new part, not in catalog)'
   await createNotificationsForRole('internal', {
     orderId: order.id,
-    message: `Order baru dari ${profile?.full_name ?? 'customer'} untuk ${partName}${notifSuffix}.`,
+    message: `New order from ${profile?.full_name ?? 'buyer'} for ${partName}${notifSuffix}.`,
   })
 
   revalidatePath('/orders')

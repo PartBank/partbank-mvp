@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { formatDate } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import { STATUS_LABELS, type OrderStatus } from '@/lib/utils/status'
 
 export interface TimelineEvent {
@@ -16,7 +16,7 @@ interface StatusTimelineProps {
 
 export function StatusTimeline({ events, currentStatus }: StatusTimelineProps) {
   if (events.length === 0) {
-    return <p className="text-sm text-text-muted">Belum ada riwayat status.</p>
+    return <p className="text-sm text-text-muted">No status history yet.</p>
   }
 
   return (
@@ -39,7 +39,7 @@ export function StatusTimeline({ events, currentStatus }: StatusTimelineProps) {
                 {STATUS_LABELS[event.to_status]}
               </p>
               {event.notes && <p className="text-xs text-text-muted mt-0.5">{event.notes}</p>}
-              <p className="text-xs text-text-muted mt-0.5">{formatDate(event.created_at)}</p>
+              <p className="text-xs text-text-muted mt-0.5">{formatDateTime(event.created_at)}</p>
             </div>
           </li>
         )

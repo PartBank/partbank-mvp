@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronRight, PlusCircle } from 'lucide-react'
+import { ChevronRight, PlusCircle, Truck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/shared/PageHeader'
 
@@ -7,56 +7,68 @@ export default async function CatalogPage() {
   const supabase = await createClient()
   const { data: brands } = await supabase
     .from('truck_brands')
-    .select('id, name')
+    .select('id, name, logo_url, truck_models(id)')
     .order('name')
 
   return (
-    <div>
-      <PageHeader
-        title="Katalog Part"
-        subtitle="Pilih merek truk Anda"
-      />
-      <div className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {brands?.map((brand) => (
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="Parts Catalog" subtitle="Select your truck brand to browse available parts." />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+        {brands?.map((brand) => {
+          const modelCount = Array.isArray(brand.truck_models) ? brand.truck_models.length : 0
+
+          return (
             <Link
               key={brand.id}
               href={`/catalog/${brand.id}`}
-              className="bg-white rounded-lg border border-border p-5 hover:shadow-sm transition-shadow cursor-pointer group"
+              className="group bg-white rounded-xl border border-border p-4 hover:border-navy-700/40 hover:shadow-sm transition-all flex items-center gap-3"
             >
-              <p className="font-medium text-text-primary group-hover:text-navy-900">
-                {brand.name}
-              </p>
-              <p className="text-sm text-navy-700 mt-1 flex items-center gap-1">
-                Lihat model
-                <ChevronRight className="h-3.5 w-3.5" />
-              </p>
+              <div className="h-11 w-11 rounded-lg bg-surface-secondary border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                {brand.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={brand.logo_url} alt={brand.name} className="h-full w-full object-contain p-1.5" />
+                ) : (
+                  <Truck className="h-5 w-5 text-text-muted" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-text-primary text-sm group-hover:text-navy-900 transition-colors truncate">
+                  {brand.name}
+                </p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {modelCount === 0 ? 'No models yet' : `${modelCount} model${modelCount !== 1 ? 's' : ''}`}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-text-muted group-hover:text-navy-700 transition-colors shrink-0" />
             </Link>
-          ))}
+          )
+        })}
 
-          {(!brands || brands.length === 0) && (
-            <p className="col-span-3 text-sm text-text-muted py-8 text-center">
-              Belum ada merek tersedia.
-            </p>
-          )}
-        </div>
-
-        <Link
-          href="/orders/new"
-          className="mt-8 flex items-center gap-4 bg-white rounded-lg border border-dashed border-border p-5 hover:border-navy-700 hover:bg-navy-50 transition-colors group"
-        >
-          <PlusCircle className="h-8 w-8 text-text-muted group-hover:text-navy-700 shrink-0" />
-          <div>
-            <p className="font-medium text-text-primary group-hover:text-navy-900">
-              Part tidak ada di katalog?
-            </p>
-            <p className="text-sm text-text-secondary mt-0.5">
-              Kirim request — tim RE PartBank akan identifikasi dan buatkan gambar tekniknya.
-            </p>
-          </div>
-          <ChevronRight className="h-5 w-5 text-text-muted ml-auto group-hover:text-navy-700" />
-        </Link>
+        {(!brands || brands.length === 0) && (
+          <p className="col-span-4 text-sm text-text-muted py-10 text-center">
+            No brands available yet.
+          </p>
+        )}
       </div>
+
+      <Link
+        href="/orders/new"
+        className="group flex items-center gap-4 bg-white rounded-xl border border-dashed border-border p-5 hover:border-navy-700/40 hover:bg-navy-50/40 transition-all"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-secondary group-hover:bg-navy-100 transition-colors shrink-0">
+          <PlusCircle className="h-5 w-5 text-text-muted group-hover:text-navy-700 transition-colors" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-text-primary text-sm group-hover:text-navy-900 transition-colors">
+            Part not in the catalog?
+          </p>
+          <p className="text-xs text-text-muted mt-0.5">
+            Submit a request — the PartBank RE team will identify and engineer it for you.
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-text-muted group-hover:text-navy-700 shrink-0 transition-colors" />
+      </Link>
     </div>
   )
 }

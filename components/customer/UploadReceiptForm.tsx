@@ -23,7 +23,7 @@ export function UploadReceiptForm({ orderId, fileType }: UploadReceiptFormProps)
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!file) {
-      setError('Pilih file bukti transfer.')
+      setError('Please select a receipt file.')
       return
     }
     setLoading(true)
@@ -45,7 +45,7 @@ export function UploadReceiptForm({ orderId, fileType }: UploadReceiptFormProps)
   if (done) {
     return (
       <div className="rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
-        Bukti berhasil diupload. Menunggu konfirmasi tim PartBank.
+        Receipt uploaded. Awaiting confirmation from PartBank.
       </div>
     )
   }
@@ -58,7 +58,7 @@ export function UploadReceiptForm({ orderId, fileType }: UploadReceiptFormProps)
         className="flex w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border-strong bg-surface-secondary px-4 py-5 text-center hover:bg-surface-tertiary transition-colors"
       >
         <span className="text-sm text-text-secondary">
-          {file ? file.name : 'Pilih file bukti transfer (gambar/PDF)'}
+          {file ? file.name : 'Select transfer receipt (image/PDF)'}
         </span>
         {file && <span className="text-xs text-text-muted">{formatFileSize(file.size)}</span>}
       </button>
@@ -82,10 +82,10 @@ export function UploadReceiptForm({ orderId, fileType }: UploadReceiptFormProps)
       >
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mengupload...
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
           </>
         ) : (
-          'Upload Bukti Transfer'
+          'Upload Transfer Receipt'
         )}
       </Button>
     </form>

@@ -17,7 +17,7 @@ import { formatDate } from '@/lib/utils'
 import { shortId } from '@/lib/utils/format'
 import type { OrderStatus } from '@/lib/utils/status'
 
-export const metadata: Metadata = { title: 'PartBank — Dashboard Bengkel' }
+export const metadata: Metadata = { title: 'PartBank — Workshop Dashboard' }
 
 export default async function WorkshopDashboardPage() {
   const supabase = await createClient()
@@ -38,21 +38,21 @@ export default async function WorkshopDashboardPage() {
     .order('created_at', { ascending: false })
 
   const all = orders ?? []
-  const aktif = all.filter((o) => ['in_production', 'pending_qc'].includes(o.status)).length
-  const menungguAksi = all.filter((o) => o.status === 'in_production').length
-  const selesai = all.filter((o) => o.status === 'completed').length
+  const activeCount = all.filter((o) => ['in_production', 'pending_qc'].includes(o.status)).length
+  const needsAction = all.filter((o) => o.status === 'in_production').length
+  const completed = all.filter((o) => o.status === 'completed').length
 
   const metrics = [
-    { label: 'Pesanan Aktif', value: aktif },
-    { label: 'Menunggu Aksi', value: menungguAksi },
-    { label: 'Selesai', value: selesai },
+    { label: 'Active Orders', value: activeCount },
+    { label: 'Needs Action', value: needsAction },
+    { label: 'Completed', value: completed },
   ]
   const recent = all.slice(0, 10)
 
   return (
-    <div>
-      <PageHeader title="Dashboard Bengkel" subtitle={workshop?.name ?? 'Bengkel'} />
-      <div className="p-6 space-y-6">
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="Workshop Dashboard" subtitle={workshop?.name} />
+      <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {metrics.map((m) => (
             <div key={m.label} className="bg-white rounded-lg border border-border p-5">
@@ -63,7 +63,7 @@ export default async function WorkshopDashboardPage() {
         </div>
 
         <div>
-          <h2 className="text-base font-medium text-text-primary mb-3">Pesanan Terbaru</h2>
+          <h2 className="text-base font-medium text-text-primary mb-3">Recent Orders</h2>
           {recent.length > 0 ? (
             <div className="bg-white rounded-lg border border-border overflow-hidden overflow-x-auto">
               <Table>
@@ -72,8 +72,8 @@ export default async function WorkshopDashboardPage() {
                     <TableHead className="w-28">Order ID</TableHead>
                     <TableHead>Part</TableHead>
                     <TableHead className="w-48">Status</TableHead>
-                    <TableHead className="w-32">Tanggal</TableHead>
-                    <TableHead className="w-24 text-right">Aksi</TableHead>
+                    <TableHead className="w-32">Date</TableHead>
+                    <TableHead className="w-24 text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -94,7 +94,7 @@ export default async function WorkshopDashboardPage() {
                         <TableCell className="text-right">
                           <Link href={`/workshop/orders/${o.id}`}>
                             <Button variant="outline" size="sm">
-                              Detail
+                              View
                             </Button>
                           </Link>
                         </TableCell>
@@ -105,7 +105,7 @@ export default async function WorkshopDashboardPage() {
               </Table>
             </div>
           ) : (
-            <EmptyState title="Belum ada pesanan yang ditugaskan" />
+            <EmptyState title="No orders assigned yet" />
           )}
         </div>
       </div>

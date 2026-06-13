@@ -23,15 +23,15 @@ export async function POST(request: NextRequest) {
   const fileType = String(form.get('fileType') ?? '')
 
   if (!(file instanceof File) || file.size === 0)
-    return NextResponse.json({ path: null, error: 'File tidak valid.' }, { status: 400 })
+    return NextResponse.json({ path: null, error: 'Invalid file.' }, { status: 400 })
   if (file.size > MAX_SIZE)
-    return NextResponse.json({ path: null, error: 'Ukuran file melebihi 10MB.' }, { status: 400 })
+    return NextResponse.json({ path: null, error: 'File size exceeds 10MB.' }, { status: 400 })
   if (!ALLOWED.includes(file.type))
-    return NextResponse.json({ path: null, error: 'Tipe file harus gambar atau PDF.' }, { status: 400 })
+    return NextResponse.json({ path: null, error: 'File must be an image or PDF.' }, { status: 400 })
   if (!BUCKETS.includes(bucket))
-    return NextResponse.json({ path: null, error: 'Bucket tidak valid.' }, { status: 400 })
+    return NextResponse.json({ path: null, error: 'Invalid bucket.' }, { status: 400 })
   if (!orderId || !FILE_TYPES.includes(fileType))
-    return NextResponse.json({ path: null, error: 'Metadata tidak lengkap.' }, { status: 400 })
+    return NextResponse.json({ path: null, error: 'Incomplete metadata.' }, { status: 400 })
 
   const path = `${orderId}/${fileType}/${Date.now()}-${file.name}`
   const { path: stored, error } = await uploadFile({ bucket, path, file, contentType: file.type })

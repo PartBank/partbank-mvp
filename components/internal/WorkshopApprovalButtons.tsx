@@ -53,16 +53,16 @@ export function WorkshopApprovalButtons({ workshopId }: { workshopId: string }) 
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tolak Pendaftaran Bengkel</DialogTitle>
+            <DialogTitle>Reject Workshop Registration</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="reason">Alasan Penolakan</Label>
+            <Label htmlFor="reason">Rejection Reason</Label>
             <Textarea
               id="reason"
               rows={4}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Jelaskan alasan penolakan..."
+              placeholder="Explain the reason for rejection..."
               disabled={loading}
             />
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -84,7 +84,7 @@ export function WorkshopApprovalButtons({ workshopId }: { workshopId: string }) 
               }}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Konfirmasi Penolakan
+              Confirm Rejection
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Sidebar, type NavItem } from '@/components/shared/Sidebar'
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Katalog', href: '/catalog', icon: 'BookOpen' },
-  { label: 'Pesanan Saya', href: '/orders', icon: 'Package' },
+  { label: 'Catalog', href: '/catalog', icon: 'BookOpen' },
+  { label: 'My Orders', href: '/orders', icon: 'Package' },
 ]
 
 export default async function CustomerLayout({ children }: { children: ReactNode }) {
@@ -27,7 +27,7 @@ export default async function CustomerLayout({ children }: { children: ReactNode
         navItems={NAV_ITEMS}
         fullName={profile?.full_name ?? undefined}
       />
-      <main className="ml-[240px] min-h-screen bg-surface-secondary">
+      <main className="ml-[220px] min-h-screen bg-surface-secondary">
         {children}
       </main>
     </div>

@@ -20,18 +20,25 @@
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 25% 89%;
-    --input: 215 25% 89%;
+    --border: 215 25% 91%;
+    --input: 215 25% 91%;
     --ring: 215 50% 23%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-surface-secondary text-text-primary;
     font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
   }
 }

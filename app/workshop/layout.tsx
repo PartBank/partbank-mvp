@@ -5,7 +5,7 @@ import { Sidebar, type NavItem } from '@/components/shared/Sidebar'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/workshop/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Pesanan', href: '/workshop/orders', icon: 'Package' },
+  { label: 'Orders', href: '/workshop/orders', icon: 'Package' },
 ]
 
 export default async function WorkshopLayout({ children }: { children: ReactNode }) {
@@ -27,7 +27,7 @@ export default async function WorkshopLayout({ children }: { children: ReactNode
         navItems={NAV_ITEMS}
         fullName={profile?.full_name ?? undefined}
       />
-      <main className="ml-[240px] min-h-screen bg-surface-secondary">
+      <main className="ml-[220px] min-h-screen bg-surface-secondary">
         {children}
       </main>
     </div>

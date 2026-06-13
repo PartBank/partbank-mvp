@@ -26,3 +26,33 @@ for (const id of ['receipts', 'drawings', 'references']) {
     console.log(`✓ ${id} created`)
   }
 }
+
+// Brand logos — public bucket, images only, 2 MB limit
+{
+  const { error } = await admin.storage.createBucket('brand-logos', {
+    public: true,
+    fileSizeLimit: '2MB',
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'],
+  })
+  if (error) {
+    if (/already exists/i.test(error.message)) console.log(`• brand-logos (already exists)`)
+    else console.error(`✗ brand-logos:`, error.message)
+  } else {
+    console.log(`✓ brand-logos created`)
+  }
+}
+
+// Model images — public bucket, images only, 5 MB limit
+{
+  const { error } = await admin.storage.createBucket('model-images', {
+    public: true,
+    fileSizeLimit: '5MB',
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
+  })
+  if (error) {
+    if (/already exists/i.test(error.message)) console.log(`• model-images (already exists)`)
+    else console.error(`✗ model-images:`, error.message)
+  } else {
+    console.log(`✓ model-images created`)
+  }
+}

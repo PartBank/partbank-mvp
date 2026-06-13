@@ -76,6 +76,7 @@ export type Database = {
           brand_id: string
           name: string
           year_range: string | null
+          image_url: string | null
           created_at: string
         }
         Insert: {
@@ -83,6 +84,7 @@ export type Database = {
           brand_id: string
           name: string
           year_range?: string | null
+          image_url?: string | null
           created_at?: string
         }
         Update: {
@@ -90,6 +92,7 @@ export type Database = {
           brand_id?: string
           name?: string
           year_range?: string | null
+          image_url?: string | null
           created_at?: string
         }
         Relationships: [
@@ -132,6 +135,8 @@ export type Database = {
           material_spec: string | null
           notes: string | null
           drawing_file_path: string | null
+          drawing_url: string | null
+          price_reference: number | null
           created_by: string | null
           created_at: string
         }
@@ -146,6 +151,8 @@ export type Database = {
           material_spec?: string | null
           notes?: string | null
           drawing_file_path?: string | null
+          drawing_url?: string | null
+          price_reference?: number | null
           created_by?: string | null
           created_at?: string
         }
@@ -160,6 +167,8 @@ export type Database = {
           material_spec?: string | null
           notes?: string | null
           drawing_file_path?: string | null
+          drawing_url?: string | null
+          price_reference?: number | null
           created_by?: string | null
           created_at?: string
         }

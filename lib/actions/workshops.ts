@@ -13,9 +13,9 @@ async function requireInternal(): Promise<{ ok: true } | { ok: false; error: str
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Tidak terautentikasi.' }
+  if (!user) return { ok: false, error: 'Not authenticated.' }
   const role = user.user_metadata?.role as UserRole | undefined
-  if (role !== 'internal') return { ok: false, error: 'Akses ditolak.' }
+  if (role !== 'internal') return { ok: false, error: 'Access denied.' }
   return { ok: true }
 }
 
@@ -30,14 +30,14 @@ export async function approveWorkshop(id: string): Promise<Result> {
   const admin = createAdminClient()
 
   const { data: ws } = await admin.from('workshops').select('profile_id').eq('id', id).single()
-  if (!ws) return { error: 'Bengkel tidak ditemukan.' }
+  if (!ws) return { error: 'Workshop not found.' }
 
   const { error } = await admin.from('workshops').update({ is_verified: true }).eq('id', id)
   if (error) return { error: error.message }
 
   await createNotification({
     userId: ws.profile_id,
-    message: 'Akun bengkel Anda telah diverifikasi. Anda dapat menerima pesanan sekarang.',
+    message: 'Your workshop account has been verified. You can now receive orders.',
   })
   done(id)
   return { error: null }
@@ -46,15 +46,15 @@ export async function approveWorkshop(id: string): Promise<Result> {
 export async function rejectWorkshop(id: string, reason: string): Promise<Result> {
   const auth = await requireInternal()
   if (!auth.ok) return { error: auth.error }
-  if (!reason.trim()) return { error: 'Alasan penolakan wajib diisi.' }
+  if (!reason.trim()) return { error: 'Rejection reason is required.' }
   const admin = createAdminClient()
 
   const { data: ws } = await admin.from('workshops').select('profile_id').eq('id', id).single()
-  if (!ws) return { error: 'Bengkel tidak ditemukan.' }
+  if (!ws) return { error: 'Workshop not found.' }
 
   await createNotification({
     userId: ws.profile_id,
-    message: `Pendaftaran bengkel Anda ditolak. Alasan: ${reason.trim()}. Silakan hubungi PartBank untuk informasi lebih lanjut.`,
+    message: `Your workshop registration has been rejected. Reason: ${reason.trim()}. Please contact PartBank for more information.`,
   })
 
   const { error } = await admin.from('workshops').delete().eq('id', id)

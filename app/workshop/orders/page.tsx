@@ -18,17 +18,17 @@ import { formatDate } from '@/lib/utils'
 import { shortId } from '@/lib/utils/format'
 import type { OrderStatus } from '@/lib/utils/status'
 
-export const metadata: Metadata = { title: 'PartBank — Pesanan Bengkel' }
+export const metadata: Metadata = { title: 'PartBank — Workshop Orders' }
 
 const TABS = [
-  { key: 'semua', label: 'Semua' },
-  { key: 'aksi', label: 'Perlu Aksi' },
-  { key: 'selesai', label: 'Selesai' },
+  { key: 'all', label: 'All' },
+  { key: 'action', label: 'Needs Action' },
+  { key: 'done', label: 'Completed' },
 ] as const
 
 function matchesFilter(status: OrderStatus, filter: string): boolean {
-  if (filter === 'aksi') return status === 'in_production'
-  if (filter === 'selesai') return status === 'completed'
+  if (filter === 'action') return status === 'in_production'
+  if (filter === 'done') return status === 'completed'
   return true
 }
 
@@ -37,7 +37,7 @@ interface Props {
 }
 
 export default async function WorkshopOrdersPage({ searchParams }: Props) {
-  const filter = searchParams.tab ?? 'semua'
+  const filter = searchParams.tab ?? 'all'
   const supabase = await createClient()
 
   const { data: orders } = await supabase
@@ -48,9 +48,9 @@ export default async function WorkshopOrdersPage({ searchParams }: Props) {
   const filtered = (orders ?? []).filter((o) => matchesFilter(o.status as OrderStatus, filter))
 
   return (
-    <div>
-      <PageHeader title="Pesanan Saya" subtitle="Pesanan yang ditugaskan ke bengkel Anda" />
-      <div className="p-6 space-y-4">
+    <div className="px-8 pt-7 pb-10">
+      <PageHeader title="My Orders" subtitle="Orders assigned to your workshop" />
+      <div className="space-y-4">
         <div className="flex gap-1 border-b border-border">
           {TABS.map((t) => (
             <Link
@@ -75,10 +75,10 @@ export default async function WorkshopOrdersPage({ searchParams }: Props) {
                 <TableRow>
                   <TableHead className="w-28">Order ID</TableHead>
                   <TableHead>Part</TableHead>
-                  <TableHead className="w-20">Jumlah</TableHead>
+                  <TableHead className="w-20">Qty</TableHead>
                   <TableHead className="w-48">Status</TableHead>
-                  <TableHead className="w-32">Tanggal</TableHead>
-                  <TableHead className="w-24 text-right">Aksi</TableHead>
+                  <TableHead className="w-32">Date</TableHead>
+                  <TableHead className="w-24 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -100,7 +100,7 @@ export default async function WorkshopOrdersPage({ searchParams }: Props) {
                       <TableCell className="text-right">
                         <Link href={`/workshop/orders/${o.id}`}>
                           <Button variant="outline" size="sm">
-                            Detail
+                            View
                           </Button>
                         </Link>
                       </TableCell>
@@ -111,7 +111,7 @@ export default async function WorkshopOrdersPage({ searchParams }: Props) {
             </Table>
           </div>
         ) : (
-          <EmptyState title="Belum ada pesanan pada filter ini" />
+          <EmptyState title="No orders match this filter" />
         )}
       </div>
     </div>

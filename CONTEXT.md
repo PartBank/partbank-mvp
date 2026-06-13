@@ -182,17 +182,17 @@ Notifications are plain text stored in the `notifications` table. They are creat
 
 ```ts
 // Example notification messages per status
-pending_re_payment:        "Biaya Reverse Engineering telah dikonfirmasi. Silakan lakukan pembayaran."
-re_in_progress:            "Pembayaran RE dikonfirmasi. Proses Reverse Engineering dimulai."
-pending_price_estimation:  "Gambar teknik selesai. Estimasi harga sedang disiapkan."
-pending_part_payment:      "Estimasi harga tersedia. Silakan lakukan pembayaran."
-in_production:             "Bengkel telah ditugaskan. Produksi dimulai." // → customer
-in_production:             "Anda mendapat pesanan baru dari PartBank."   // → workshop
-pending_qc:                "Part sedang dalam inspeksi QC PartBank."
-qc_failed_cancelled:       "Part gagal QC. Order dibatalkan. Refund akan segera diproses."
-cancelled_refunded:        "Refund telah diproses. Dana akan masuk dalam 1-3 hari kerja."
-in_delivery:               "Part lolos QC dan sedang dalam pengiriman. Resi: {tracking}"
-completed:                 "Pesanan Anda telah selesai. Terima kasih!"
+pending_re_payment:        "RE fee confirmed. Please complete your payment."
+re_in_progress:            "RE payment received. Reverse Engineering process has started."
+pending_price_estimation:  "Technical drawing complete. Price estimation is being prepared."
+pending_part_payment:      "Price estimation ready. Please complete your payment."
+in_production:             "Workshop assigned. Production has started."          // → customer
+in_production:             "You have a new order from PartBank."                 // → workshop
+pending_qc:                "Part is under PartBank QC inspection."
+qc_failed_cancelled:       "Part failed QC. Order has been cancelled. Refund will be processed shortly."
+cancelled_refunded:        "Refund has been processed. Funds will arrive within 1–3 business days."
+in_delivery:               "Part passed QC and is on its way. Tracking: {tracking}"
+completed:                 "Your order is complete. Thank you!"
 ```
 
 ---
@@ -209,7 +209,13 @@ parts:         all authenticated users can read | only internal can write
 
 ---
 
-## 10. Design System
+## 10. Language
+
+**All UI copy must be in English.** This includes: labels, buttons, page titles, error messages, empty states, notification messages, status labels, and any other user-facing text. Indonesian is only used for proper nouns (e.g. company/brand names like "Hino", "Mitsubishi Fuso", demo account names like "Bengkel Maju Jaya").
+
+---
+
+## 11. Design System
 
 ### Visual Style
 Clean & professional B2B. Dark navy sidebar, white content area. Feels like a reliable industrial platform — not a startup SaaS template.

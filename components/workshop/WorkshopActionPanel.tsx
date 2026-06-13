@@ -65,27 +65,27 @@ export function WorkshopActionPanel({ orderId, status, accepted }: WorkshopActio
             onClick={() => run(() => workshopAcceptOrder(orderId))}
           >
             {loading && spinner}
-            Terima Pesanan ✓
+            Accept Order ✓
           </Button>
 
           <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full border-red-300 text-red-700 hover:bg-red-50">
-                Tolak Pesanan ✗
+                Reject Order ✗
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Tolak Pesanan — Alasan</DialogTitle>
+                <DialogTitle>Reject Order — Reason</DialogTitle>
               </DialogHeader>
               <div className="space-y-2">
-                <Label htmlFor="reason">Alasan Penolakan</Label>
+                <Label htmlFor="reason">Rejection Reason</Label>
                 <Textarea
                   id="reason"
                   rows={4}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Jelaskan alasan menolak pesanan ini..."
+                  placeholder="Explain why you are rejecting this order..."
                   disabled={loading}
                 />
               </div>
@@ -99,7 +99,7 @@ export function WorkshopActionPanel({ orderId, status, accepted }: WorkshopActio
                   }}
                 >
                   {loading && spinner}
-                  Konfirmasi Penolakan
+                  Confirm Rejection
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -109,28 +109,28 @@ export function WorkshopActionPanel({ orderId, status, accepted }: WorkshopActio
 
       {status === 'in_production' && accepted && (
         <div className="space-y-2">
-          <p className="text-sm text-text-secondary">Produksi sedang berlangsung.</p>
+          <p className="text-sm text-text-secondary">Production is in progress.</p>
           <Button
             className="w-full bg-navy-900 hover:bg-navy-800 text-white"
             disabled={loading}
             onClick={() => run(() => workshopProductionComplete(orderId))}
           >
             {loading && spinner}
-            Produksi Selesai — Kirim ke QC
+            Production Complete — Send to QC
           </Button>
         </div>
       )}
 
       {status === 'pending_qc' && (
         <p className="text-sm text-text-secondary">
-          Part telah dikirim ke pusat QC PartBank. Menunggu hasil inspeksi.
+          Part has been sent to PartBank QC center. Awaiting inspection result.
         </p>
       )}
 
-      {status === 'completed' && <p className="text-sm text-text-secondary">Pesanan selesai.</p>}
+      {status === 'completed' && <p className="text-sm text-text-secondary">Order complete.</p>}
 
       {(status === 'qc_failed_cancelled' || status === 'cancelled_refunded') && (
-        <p className="text-sm text-red-700">Part gagal QC. Order dibatalkan.</p>
+        <p className="text-sm text-red-700">Part failed QC. Order cancelled.</p>
       )}
     </div>
   )

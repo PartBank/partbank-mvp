@@ -41,8 +41,8 @@ export const NEEDS_INTERNAL_ACTION: OrderStatus[] = [
   'pending_re_confirmation',
   'pending_re_receipt',
   're_in_progress',
-  'pending_payment_confirmation',
   'finding_workshop',
+  'pending_payment_confirmation',
   'pending_qc',
   'qc_failed_cancelled',
   'in_delivery',
@@ -50,16 +50,16 @@ export const NEEDS_INTERNAL_ACTION: OrderStatus[] = [
 
 // Customer-facing notification message templates (CONTEXT §8).
 export const NOTIFICATION_MESSAGES: Partial<Record<OrderStatus, string>> = {
-  pending_re_payment: 'Biaya Reverse Engineering telah dikonfirmasi. Silakan lakukan pembayaran.',
-  re_in_progress: 'Pembayaran RE dikonfirmasi. Proses Reverse Engineering dimulai.',
-  pending_price_estimation: 'Gambar teknik selesai. Estimasi harga sedang disiapkan.',
-  pending_part_payment: 'Estimasi harga tersedia. Silakan lakukan pembayaran.',
-  in_production: 'Bengkel telah ditugaskan. Produksi dimulai.',
-  pending_qc: 'Part sedang dalam inspeksi QC PartBank.',
-  qc_failed_cancelled: 'Part gagal QC. Order dibatalkan. Refund akan segera diproses.',
-  cancelled_refunded: 'Refund telah diproses. Dana akan masuk dalam 1-3 hari kerja.',
-  in_delivery: 'Part lolos QC dan sedang dalam pengiriman.',
-  completed: 'Pesanan Anda telah selesai. Terima kasih!',
+  pending_re_payment: 'RE fee confirmed. Please proceed with payment.',
+  re_in_progress: 'RE payment confirmed. Reverse Engineering is now in progress.',
+  pending_price_estimation: 'Your order is being reviewed. Price estimate is being prepared.',
+  pending_part_payment: 'Price estimate ready. Please proceed with payment.',
+  in_production: 'Workshop assigned. Production has started.',
+  pending_qc: 'Part is undergoing PartBank QC inspection.',
+  qc_failed_cancelled: 'Part failed QC. Order cancelled. Refund will be processed shortly.',
+  cancelled_refunded: 'Refund processed. Funds will arrive within 1–3 business days.',
+  in_delivery: 'Part passed QC and is now in delivery.',
+  completed: 'Your order is complete. Thank you!',
 }
 
-export const WORKSHOP_ASSIGNED_MESSAGE = 'Anda mendapat pesanan baru dari PartBank.'
+export const WORKSHOP_ASSIGNED_MESSAGE = 'You have received a new order from PartBank.'

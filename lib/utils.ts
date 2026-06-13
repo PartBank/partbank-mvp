@@ -13,6 +13,23 @@ export function formatDate(date: string): string {
   }).format(new Date(date))
 }
 
+export function formatDateTime(date: string): string {
+  const d = new Date(date)
+  const datePart = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta',
+  }).format(d)
+  const timePart = new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Jakarta',
+  }).format(d)
+  return `${datePart}, ${timePart}`
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',

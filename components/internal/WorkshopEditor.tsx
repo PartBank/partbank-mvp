@@ -41,7 +41,7 @@ export function WorkshopEditor({ workshopId, initialTags, initialTier }: Props) 
     setLoading(null)
     if (res.error) setError(res.error)
     else {
-      setMsg('Capability tags tersimpan.')
+      setMsg('Capability tags saved.')
       router.refresh()
     }
   }
@@ -55,7 +55,7 @@ export function WorkshopEditor({ workshopId, initialTags, initialTier }: Props) 
     setLoading(null)
     if (res.error) setError(res.error)
     else {
-      setMsg('Tier tersimpan.')
+      setMsg('Tier saved.')
       router.refresh()
     }
   }
@@ -63,7 +63,7 @@ export function WorkshopEditor({ workshopId, initialTags, initialTier }: Props) 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="tags">Capability Tags (pisahkan dengan koma)</Label>
+        <Label htmlFor="tags">Capability Tags (comma-separated)</Label>
         <div className="flex gap-2">
           <Input
             id="tags"
@@ -78,7 +78,7 @@ export function WorkshopEditor({ workshopId, initialTags, initialTier }: Props) 
             onClick={saveTags}
           >
             {loading === 'tags' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Simpan
+            Save
           </Button>
         </div>
       </div>

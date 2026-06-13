@@ -22,7 +22,7 @@ export function FileUpload({
   bucket,
   fileType,
   onSuccess,
-  label = 'Pilih file',
+  label = 'Select file',
   accept = 'image/*,application/pdf',
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -35,7 +35,7 @@ export function FileUpload({
     setError('')
     setDone(false)
     if (f && f.size > MAX_SIZE) {
-      setError('Ukuran file melebihi 10MB.')
+      setError('File size exceeds 10MB.')
       setFile(null)
       return
     }
@@ -55,13 +55,13 @@ export function FileUpload({
       const res = await fetch('/api/uploads', { method: 'POST', body: fd })
       const data = (await res.json()) as { path: string | null; error: string | null }
       if (!res.ok || data.error || !data.path) {
-        setError(data.error ?? 'Upload gagal.')
+        setError(data.error ?? 'Upload failed.')
         return
       }
       setDone(true)
       onSuccess?.(data.path)
     } catch {
-      setError('Terjadi kesalahan saat upload.')
+      setError('An error occurred while uploading.')
     } finally {
       setUploading(false)
     }
@@ -87,7 +87,7 @@ export function FileUpload({
       />
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {done && <p className="text-sm text-green-600">Berhasil diupload.</p>}
+      {done && <p className="text-sm text-green-600">Upload successful.</p>}
 
       {file && !done && (
         <Button
@@ -98,7 +98,7 @@ export function FileUpload({
         >
           {uploading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mengupload...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
             </>
           ) : (
             'Upload'

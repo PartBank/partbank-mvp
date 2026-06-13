@@ -5,9 +5,9 @@ import { Sidebar, type NavItem } from '@/components/shared/Sidebar'
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/internal/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Semua Order', href: '/internal/orders', icon: 'Package' },
-  { label: 'Katalog', href: '/internal/catalog', icon: 'BookOpen' },
-  { label: 'Bengkel', href: '/internal/workshops', icon: 'Wrench' },
+  { label: 'All Orders', href: '/internal/orders', icon: 'Package' },
+  { label: 'Catalog', href: '/internal/catalog', icon: 'BookOpen' },
+  { label: 'Workshops', href: '/internal/workshops', icon: 'Wrench' },
 ]
 
 export default async function InternalLayout({ children }: { children: ReactNode }) {
@@ -29,7 +29,7 @@ export default async function InternalLayout({ children }: { children: ReactNode
         navItems={NAV_ITEMS}
         fullName={profile?.full_name ?? undefined}
       />
-      <main className="ml-[240px] min-h-screen bg-surface-secondary">
+      <main className="ml-[220px] min-h-screen bg-surface-secondary">
         {children}
       </main>
     </div>
