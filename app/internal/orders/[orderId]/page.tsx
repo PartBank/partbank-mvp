@@ -38,7 +38,8 @@ export default async function InternalOrderDetailPage({ params }: Props) {
   const { data: order } = await supabase
     .from('orders')
     .select(
-      `id, status, quantity, notes, re_fee, part_price, tracking_number, qc_failure_notes, created_at,
+      `id, status, quantity, notes, re_fee, part_price, tracking_number, qc_failure_notes,
+       custom_part_name, custom_part_description, truck_info, created_at,
        parts(name, manufacturability_grade, part_categories(name)),
        customer:profiles!orders_customer_id_fkey(full_name),
        workshops(name)`
@@ -85,7 +86,10 @@ export default async function InternalOrderDetailPage({ params }: Props) {
 
   return (
     <div>
-      <PageHeader title={`Order ${shortId(order.id)}`} subtitle={part?.name} />
+      <PageHeader
+        title={`Order ${shortId(order.id)}`}
+        subtitle={part?.name ?? order.custom_part_name ?? 'Custom Part Request'}
+      />
       <div className="p-6">
         <Link href="/internal/orders" className="text-sm text-navy-700 hover:underline mb-6 inline-block">
           ← Kembali ke Semua Order
@@ -134,6 +138,33 @@ export default async function InternalOrderDetailPage({ params }: Props) {
                 </div>
               )}
             </div>
+
+            {/* Custom part request info */}
+            {!part && order.custom_part_name && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-5 space-y-3">
+                <p className="text-xs font-medium text-amber-800 uppercase tracking-wide">
+                  Custom Part Request — Part belum ada di katalog
+                </p>
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div>
+                    <span className="text-amber-700">Nama Part</span>
+                    <p className="text-text-primary font-medium">{order.custom_part_name}</p>
+                  </div>
+                  {order.truck_info && (
+                    <div>
+                      <span className="text-amber-700">Merek & Model Truk</span>
+                      <p className="text-text-primary">{order.truck_info}</p>
+                    </div>
+                  )}
+                  {order.custom_part_description && (
+                    <div>
+                      <span className="text-amber-700">Deskripsi & Spesifikasi</span>
+                      <p className="text-text-primary whitespace-pre-wrap">{order.custom_part_description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Files */}
             <div className="bg-white rounded-lg border border-border p-5">

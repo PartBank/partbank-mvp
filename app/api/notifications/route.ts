@@ -19,6 +19,16 @@ export async function GET(request: NextRequest) {
       .eq('is_read', false)
   }
 
+  // Mark a single notification as read.
+  const markId = request.nextUrl.searchParams.get('markId')
+  if (markId) {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', markId)
+      .eq('user_id', user.id)
+  }
+
   const { data: notifications } = await supabase
     .from('notifications')
     .select('id, message, is_read, order_id, created_at')

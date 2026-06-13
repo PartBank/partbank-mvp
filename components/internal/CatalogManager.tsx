@@ -44,12 +44,13 @@ import type { ManufacturabilityGrade } from '@/lib/types/database.types'
 
 interface Brand { id: string; name: string }
 interface Model { id: string; name: string; year_range: string | null; brand_id: string }
-interface Category { id: string; name: string; model_id: string }
+interface Category { id: string; name: string }
 interface Part {
   id: string
   name: string
   manufacturability_grade: ManufacturabilityGrade | null
   category_id: string
+  model_id: string
 }
 
 interface Props {
@@ -74,7 +75,6 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // form fields
   const [name, setName] = useState('')
   const [yearRange, setYearRange] = useState('')
   const [brandId, setBrandId] = useState('')
@@ -90,13 +90,7 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
     () => new Map(models.map((m) => [m.id, `${brandName.get(m.brand_id) ?? '?'} › ${m.name}`])),
     [models, brandName]
   )
-  const categoryLabel = useMemo(
-    () =>
-      new Map(
-        categories.map((c) => [c.id, `${modelLabel.get(c.model_id) ?? '?'} › ${c.name}`])
-      ),
-    [categories, modelLabel]
-  )
+  const categoryName = useMemo(() => new Map(categories.map((c) => [c.id, c.name])), [categories])
 
   function resetForm() {
     setName('')
@@ -132,12 +126,15 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
   async function submitAdd() {
     if (tab === 'brands') return run(() => createBrand(name))
     if (tab === 'models') return run(() => createModel(brandId, name, yearRange))
-    if (tab === 'categories') return run(() => createCategory(modelId, name))
-    return run(() => createPart({ categoryId, name, description, materialSpec, grade, notes }))
+    if (tab === 'categories') return run(() => createCategory(name))
+    return run(() => createPart({ categoryId, modelId, name, description, materialSpec, grade, notes }))
   }
 
   const addLabel =
-    tab === 'brands' ? 'Tambah Merek' : tab === 'models' ? 'Tambah Model' : tab === 'categories' ? 'Tambah Kategori' : 'Tambah Part'
+    tab === 'brands' ? 'Tambah Merek'
+    : tab === 'models' ? 'Tambah Model'
+    : tab === 'categories' ? 'Tambah Kategori'
+    : 'Tambah Part'
 
   return (
     <div className="space-y-4">
@@ -220,8 +217,8 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
             <>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Model</TableHead>
+                  <TableHead>Nama Kategori</TableHead>
+                  <TableHead className="w-24">Part</TableHead>
                   <TableHead className="w-20 text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -229,7 +226,9 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
                 {categories.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium text-text-primary">{c.name}</TableCell>
-                    <TableCell className="text-sm text-text-secondary">{modelLabel.get(c.model_id)}</TableCell>
+                    <TableCell className="text-sm text-text-secondary">
+                      {parts.filter((p) => p.category_id === c.id).length}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DeleteButton loading={loading} onDelete={() => run(() => deleteCategory(c.id), false)} />
                     </TableCell>
@@ -244,6 +243,7 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama Part</TableHead>
+                  <TableHead>Model</TableHead>
                   <TableHead>Kategori</TableHead>
                   <TableHead className="w-20">Grade</TableHead>
                   <TableHead className="w-20 text-right">Aksi</TableHead>
@@ -254,7 +254,10 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium text-text-primary">{p.name}</TableCell>
                     <TableCell className="text-sm text-text-secondary">
-                      {categoryLabel.get(p.category_id)}
+                      {modelLabel.get(p.model_id) ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-text-secondary">
+                      {categoryName.get(p.category_id) ?? '—'}
                     </TableCell>
                     <TableCell className="text-sm text-text-secondary">
                       {p.manufacturability_grade ?? '—'}
@@ -270,7 +273,6 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
         </Table>
       </div>
 
-      {/* Add dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -281,32 +283,10 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
               <div className="space-y-2">
                 <Label>Merek</Label>
                 <Select value={brandId} onValueChange={setBrandId} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih merek" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Pilih merek" /></SelectTrigger>
                   <SelectContent>
                     {brands.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {tab === 'categories' && (
-              <div className="space-y-2">
-                <Label>Model</Label>
-                <Select value={modelId} onValueChange={setModelId} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {models.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {modelLabel.get(m.id)}
-                      </SelectItem>
+                      <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -314,26 +294,38 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
             )}
 
             {tab === 'parts' && (
-              <div className="space-y-2">
-                <Label>Kategori</Label>
-                <Select value={categoryId} onValueChange={setCategoryId} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {categoryLabel.get(c.id)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Model</Label>
+                  <Select value={modelId} onValueChange={setModelId} disabled={loading}>
+                    <SelectTrigger><SelectValue placeholder="Pilih model" /></SelectTrigger>
+                    <SelectContent>
+                      {models.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{modelLabel.get(m.id)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Kategori</Label>
+                  <Select value={categoryId} onValueChange={setCategoryId} disabled={loading}>
+                    <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
               <Label htmlFor="cat-name">
-                {tab === 'brands' ? 'Nama Merek' : tab === 'models' ? 'Nama Model' : tab === 'categories' ? 'Nama Kategori' : 'Nama Part'}
+                {tab === 'brands' ? 'Nama Merek'
+                  : tab === 'models' ? 'Nama Model'
+                  : tab === 'categories' ? 'Nama Kategori'
+                  : 'Nama Part'}
               </Label>
               <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
             </div>
@@ -358,14 +350,10 @@ export function CatalogManager({ brands, models, categories, parts }: Props) {
                 <div className="space-y-2">
                   <Label>Manufacturability Grade</Label>
                   <Select value={grade} onValueChange={(v) => setGrade(v as ManufacturabilityGrade)} disabled={loading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih grade" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Pilih grade" /></SelectTrigger>
                     <SelectContent>
                       {(['A', 'B', 'C', 'D'] as const).map((g) => (
-                        <SelectItem key={g} value={g}>
-                          Grade {g}
-                        </SelectItem>
+                        <SelectItem key={g} value={g}>Grade {g}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

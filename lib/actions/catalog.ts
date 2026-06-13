@@ -50,14 +50,13 @@ export async function createModel(
   return { error: null }
 }
 
-export async function createCategory(modelId: string, name: string): Promise<Result> {
+export async function createCategory(name: string): Promise<Result> {
   const { supabase, error } = await requireInternal()
   if (error) return { error }
-  if (!modelId) return { error: 'Pilih model.' }
   if (!name.trim()) return { error: 'Nama kategori wajib diisi.' }
   const { error: e } = await supabase
     .from('part_categories')
-    .insert({ model_id: modelId, name: name.trim() })
+    .insert({ name: name.trim() })
   if (e) return { error: e.message }
   done()
   return { error: null }
@@ -65,6 +64,7 @@ export async function createCategory(modelId: string, name: string): Promise<Res
 
 export async function createPart(input: {
   categoryId: string
+  modelId: string
   name: string
   description: string
   materialSpec: string
@@ -74,12 +74,14 @@ export async function createPart(input: {
   const { supabase, error } = await requireInternal()
   if (error) return { error }
   if (!input.categoryId) return { error: 'Pilih kategori.' }
+  if (!input.modelId) return { error: 'Pilih model.' }
   if (!input.name.trim()) return { error: 'Nama part wajib diisi.' }
   const {
     data: { user },
   } = await supabase.auth.getUser()
   const { error: e } = await supabase.from('parts').insert({
     category_id: input.categoryId,
+    model_id: input.modelId,
     name: input.name.trim(),
     description: input.description.trim() || null,
     material_spec: input.materialSpec.trim() || null,
@@ -113,11 +115,11 @@ export async function deleteModel(id: string): Promise<Result> {
   const { supabase, error } = await requireInternal()
   if (error) return { error }
   const { count } = await supabase
-    .from('part_categories')
+    .from('parts')
     .select('id', { count: 'exact', head: true })
     .eq('model_id', id)
   if ((count ?? 0) > 0)
-    return { error: `Model ini memiliki ${count} kategori. Hapus kategori terlebih dahulu.` }
+    return { error: `Model ini memiliki ${count} part. Hapus part terlebih dahulu.` }
   const { error: e } = await supabase.from('truck_models').delete().eq('id', id)
   if (e) return { error: e.message }
   done()

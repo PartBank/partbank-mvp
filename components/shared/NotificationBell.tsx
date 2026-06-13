@@ -68,8 +68,17 @@ export function NotificationBell({ role }: NotificationBellProps) {
 
   const orderBase = role === 'internal' ? '/internal/orders' : role === 'workshop' ? '/workshop/orders' : '/orders'
 
-  function handleItemClick(item: NotificationItem) {
+  async function handleItemClick(item: NotificationItem) {
     setOpen(false)
+    if (!item.is_read) {
+      // Optimistically mark as read in local state.
+      setItems((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
+      )
+      setUnread((prev) => Math.max(0, prev - 1))
+      // Persist to server (fire-and-forget).
+      fetch(`/api/notifications?markId=${item.id}`, { cache: 'no-store' }).catch(() => {})
+    }
     if (item.order_id) router.push(`${orderBase}/${item.order_id}`)
   }
 
@@ -89,7 +98,7 @@ export function NotificationBell({ role }: NotificationBellProps) {
       </button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 w-80 max-h-96 overflow-y-auto rounded-lg border border-border bg-white shadow-md z-50">
+        <div className="absolute bottom-full left-0 mb-2 w-80 max-h-[70vh] overflow-y-auto rounded-lg border border-border bg-white shadow-md z-50">
           <div className="flex items-center justify-between border-b border-border px-3 py-2 sticky top-0 bg-white">
             <span className="text-sm font-medium text-text-primary">Notifikasi</span>
             <button

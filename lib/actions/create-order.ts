@@ -19,37 +19,53 @@ export async function createOrder(
   const role = user.user_metadata?.role as UserRole | undefined
   if (role !== 'customer') return { error: 'Hanya customer yang dapat membuat pesanan.' }
 
-  const partId = String(formData.get('partId') ?? '')
+  const partId = String(formData.get('partId') ?? '').trim() || null
+  const customPartName = String(formData.get('customPartName') ?? '').trim() || null
+  const customPartDescription = String(formData.get('customPartDescription') ?? '').trim() || null
+  const truckInfo = String(formData.get('truckInfo') ?? '').trim() || null
   const quantity = Math.max(1, Number(formData.get('quantity') ?? 1))
-  const notes = String(formData.get('notes') ?? '').trim()
-  const photo = formData.get('photo')
-  if (!partId) return { error: 'Part tidak valid.' }
+  const notes = String(formData.get('notes') ?? '').trim() || null
+  const photos = formData.getAll('photo')
+
+  // One of partId or customPartName is required
+  if (!partId && !customPartName) return { error: 'Pilih part dari katalog atau isi nama part.' }
+  if (!partId && !truckInfo) return { error: 'Info truk wajib diisi untuk request part baru.' }
 
   const admin = createAdminClient()
 
-  // Verify part exists + grab its name + the customer's name for the notification.
-  const [{ data: part }, { data: profile }] = await Promise.all([
-    admin.from('parts').select('id, name').eq('id', partId).single(),
-    admin.from('profiles').select('full_name').eq('id', user.id).single(),
-  ])
-  if (!part) return { error: 'Part tidak ditemukan.' }
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
 
-  // Insert the order.
+  let partName: string
+  if (partId) {
+    const { data: part } = await admin.from('parts').select('id, name').eq('id', partId).single()
+    if (!part) return { error: 'Part tidak ditemukan.' }
+    partName = part.name
+  } else {
+    partName = customPartName!
+  }
+
   const { data: order, error: orderErr } = await admin
     .from('orders')
     .insert({
       customer_id: user.id,
       part_id: partId,
+      custom_part_name: customPartName,
+      custom_part_description: customPartDescription,
+      truck_info: truckInfo,
       quantity,
-      notes: notes || null,
+      notes,
       status: 'pending_re_confirmation',
     })
     .select('id')
     .single()
   if (orderErr || !order) return { error: orderErr?.message ?? 'Gagal membuat pesanan.' }
 
-  // Optional reference photo.
-  if (photo instanceof File && photo.size > 0) {
+  for (const photo of photos) {
+    if (!(photo instanceof File) || photo.size === 0) continue
     const path = `${order.id}/${Date.now()}-${photo.name}`
     const { error: upErr } = await uploadFile({
       bucket: 'references',
@@ -67,17 +83,18 @@ export async function createOrder(
     }
   }
 
-  // Initial event + notify internal staff.
   await admin.from('order_events').insert({
     order_id: order.id,
     actor_id: user.id,
     from_status: null,
     to_status: 'pending_re_confirmation',
-    notes: 'Order dibuat oleh customer',
+    notes: partId ? 'Order dibuat dari katalog' : 'Order custom — part belum ada di katalog',
   })
+
+  const notifSuffix = partId ? '' : ' (part baru, belum di katalog)'
   await createNotificationsForRole('internal', {
     orderId: order.id,
-    message: `Order baru masuk dari ${profile?.full_name ?? 'customer'} untuk ${part.name}.`,
+    message: `Order baru dari ${profile?.full_name ?? 'customer'} untuk ${partName}${notifSuffix}.`,
   })
 
   revalidatePath('/orders')

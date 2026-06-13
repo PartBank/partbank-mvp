@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, PlusCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/shared/PageHeader'
 
@@ -40,6 +40,22 @@ export default async function CatalogPage() {
             </p>
           )}
         </div>
+
+        <Link
+          href="/orders/new"
+          className="mt-8 flex items-center gap-4 bg-white rounded-lg border border-dashed border-border p-5 hover:border-navy-700 hover:bg-navy-50 transition-colors group"
+        >
+          <PlusCircle className="h-8 w-8 text-text-muted group-hover:text-navy-700 shrink-0" />
+          <div>
+            <p className="font-medium text-text-primary group-hover:text-navy-900">
+              Part tidak ada di katalog?
+            </p>
+            <p className="text-sm text-text-secondary mt-0.5">
+              Kirim request — tim RE PartBank akan identifikasi dan buatkan gambar tekniknya.
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-text-muted ml-auto group-hover:text-navy-700" />
+        </Link>
       </div>
     </div>
   )

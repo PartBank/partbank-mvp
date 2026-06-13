@@ -105,36 +105,26 @@ export type Database = {
       part_categories: {
         Row: {
           id: string
-          model_id: string
           name: string
           created_at: string
         }
         Insert: {
           id?: string
-          model_id: string
           name: string
           created_at?: string
         }
         Update: {
           id?: string
-          model_id?: string
           name?: string
           created_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: 'part_categories_model_id_fkey'
-            columns: ['model_id']
-            isOneToOne: false
-            referencedRelation: 'truck_models'
-            referencedColumns: ['id']
-          }
-        ]
+        Relationships: []
       }
       parts: {
         Row: {
           id: string
           category_id: string
+          model_id: string
           name: string
           description: string | null
           manufacturability_grade: ManufacturabilityGrade | null
@@ -148,6 +138,7 @@ export type Database = {
         Insert: {
           id?: string
           category_id: string
+          model_id: string
           name: string
           description?: string | null
           manufacturability_grade?: ManufacturabilityGrade | null
@@ -161,6 +152,7 @@ export type Database = {
         Update: {
           id?: string
           category_id?: string
+          model_id?: string
           name?: string
           description?: string | null
           manufacturability_grade?: ManufacturabilityGrade | null
@@ -177,6 +169,13 @@ export type Database = {
             columns: ['category_id']
             isOneToOne: false
             referencedRelation: 'part_categories'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'parts_model_id_fkey'
+            columns: ['model_id']
+            isOneToOne: false
+            referencedRelation: 'truck_models'
             referencedColumns: ['id']
           },
           {
@@ -233,7 +232,7 @@ export type Database = {
         Row: {
           id: string
           customer_id: string
-          part_id: string
+          part_id: string | null
           workshop_id: string | null
           status: OrderStatus
           quantity: number
@@ -242,13 +241,16 @@ export type Database = {
           part_price: number | null
           tracking_number: string | null
           qc_failure_notes: string | null
+          custom_part_name: string | null
+          custom_part_description: string | null
+          truck_info: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           customer_id: string
-          part_id: string
+          part_id?: string | null
           workshop_id?: string | null
           status?: OrderStatus
           quantity?: number
@@ -257,13 +259,16 @@ export type Database = {
           part_price?: number | null
           tracking_number?: string | null
           qc_failure_notes?: string | null
+          custom_part_name?: string | null
+          custom_part_description?: string | null
+          truck_info?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           customer_id?: string
-          part_id?: string
+          part_id?: string | null
           workshop_id?: string | null
           status?: OrderStatus
           quantity?: number
@@ -272,6 +277,9 @@ export type Database = {
           part_price?: number | null
           tracking_number?: string | null
           qc_failure_notes?: string | null
+          custom_part_name?: string | null
+          custom_part_description?: string | null
+          truck_info?: string | null
           created_at?: string
           updated_at?: string
         }
