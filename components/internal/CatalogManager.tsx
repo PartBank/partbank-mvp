@@ -1010,12 +1010,10 @@ function ModelImageButton({ hasImage, uploading, onFile }: { hasImage: boolean; 
 }
 
 function BrandLogoButton({
-  brandId: _brandId,
   hasImage,
   uploading,
   onFile,
 }: {
-  brandId: string
   hasImage: boolean
   uploading: boolean
   onFile: (file: File) => void
