@@ -1,14 +1,10 @@
 // Seed a demo-ready state: one in-production order with history + a few
 // unread notifications per account. Idempotent (skips if a [DEMO] order exists).
-// Usage: node scripts/seed-demo.mjs
-import { readFileSync } from 'node:fs'
+// Usage: node supabase/scripts/seed-demo.mjs
 import { createClient } from '@supabase/supabase-js'
+import { loadEnv } from './_env.mjs'
 
-const env = {}
-for (const line of readFileSync(new URL('../.env.local', import.meta.url), 'utf8').split('\n')) {
-  const m = line.match(/^\s*([\w.]+)\s*=\s*(.*)\s*$/)
-  if (m) env[m[1]] = m[2]
-}
+const env = loadEnv()
 const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 })

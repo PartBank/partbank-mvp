@@ -1,5 +1,5 @@
 -- RLS policies for the brand-logos storage bucket.
--- Bucket is created via scripts/create-buckets.mjs (public: true, 2MB limit).
+-- Bucket is created in 20260614000001_storage_buckets.sql (public: true, 2MB limit).
 
 -- Anyone can read logos (public catalog).
 CREATE POLICY "brand-logos: public read"

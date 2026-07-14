@@ -22,6 +22,12 @@ const DEMO_ACCOUNTS = [
   { role: 'customer' as const, email: 'buyer@buyer.com',       password: 'password', Icon: Truck },
 ]
 
+// Demo accounts only exist in lab/local seed data — hide them in production.
+// Defaults to 'lab' when unset, so demos show everywhere except when
+// NEXT_PUBLIC_APP_ENV=production is set (e.g. in the production deployment).
+const APP_ENV = process.env.NEXT_PUBLIC_APP_ENV ?? 'lab'
+const IS_PRODUCTION = APP_ENV === 'production'
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -157,7 +163,8 @@ function LoginForm() {
         </p>
       </div>
 
-      {/* Demo credentials */}
+      {/* Demo credentials — lab/local only, hidden in production */}
+      {!IS_PRODUCTION && (
       <div className="rounded-xl border border-dashed border-border bg-surface-secondary px-4 py-3">
         <button
           type="button"
@@ -201,6 +208,7 @@ function LoginForm() {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

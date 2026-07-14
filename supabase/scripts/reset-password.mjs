@@ -1,20 +1,15 @@
-// One-off admin script: reset a user's password (and confirm their email).
-// Usage: node scripts/reset-password.mjs <email> <newPassword>
+// Admin utility: reset a user's password (and confirm their email).
+// Usage: node supabase/scripts/reset-password.mjs <email> <newPassword>
 // Defaults: buyer@buyer.com / password
-import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
+import { loadEnv } from './_env.mjs'
 
-// Load .env.local manually (no dotenv dependency)
-const env = {}
-for (const line of readFileSync(new URL('../.env.local', import.meta.url), 'utf8').split('\n')) {
-  const m = line.match(/^\s*([\w.]+)\s*=\s*(.*)\s*$/)
-  if (m) env[m[1]] = m[2]
-}
+const env = loadEnv()
 
 const url = env.NEXT_PUBLIC_SUPABASE_URL
 const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
 if (!url || !serviceKey) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local / .env')
   process.exit(1)
 }
 

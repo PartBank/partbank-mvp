@@ -70,10 +70,11 @@ All four values are in your Supabase dashboard under **Project Settings → API*
 
 ### 3. Run database migrations
 
-Apply all migrations in order using the provided script:
+Apply each migration in chronological order using the provided script:
 
 ```bash
-node scripts/run-migration.mjs
+# run once per file, oldest first:
+node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql
 ```
 
 Or apply them manually via the Supabase SQL editor in `supabase/migrations/`, in chronological order.
@@ -81,20 +82,14 @@ Or apply them manually via the Supabase SQL editor in `supabase/migrations/`, in
 ### 4. Seed demo data
 
 ```bash
-node scripts/seed-demo.mjs
+node supabase/scripts/seed-demo.mjs
 ```
 
 This creates the three demo accounts, sample truck brands/models/parts, and a sample order with notifications.
 
-### 5. Create storage buckets
+> Storage buckets (`receipts`, `drawings`, `references`, `brand-logos`, `model-images`) are created by the migrations in step 3 — no separate step needed.
 
-```bash
-node scripts/create-buckets.mjs
-```
-
-Creates the five storage buckets: `receipts`, `drawings`, `references`, `brand-logos`, `model-images`.
-
-### 6. Start the dev server
+### 5. Start the dev server
 
 ```bash
 npm run dev

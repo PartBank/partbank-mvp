@@ -126,8 +126,8 @@ lib/
   notifications.ts  ← createNotification, createNotificationsForRole
 
 middleware.ts         ← route protection (role check on every request)
-scripts/              ← dev utilities: create-buckets.mjs, seed-demo.mjs, etc.
 supabase/migrations/  ← all schema migrations (run in order)
+supabase/scripts/     ← Supabase helpers: run-migration.mjs, seed-demo.mjs, etc.
 ```
 
 ---
@@ -209,7 +209,7 @@ workshops         -- profile_id FK, name, address, capability_tags[], tier
 | `brand-logos` | Public | 2MB | Truck brand logos (PNG/JPEG/WebP/SVG) |
 | `model-images` | Public | 5MB | Truck model photos (PNG/JPEG/WebP) |
 
-Bucket creation: `node scripts/create-buckets.mjs`
+Bucket creation: migration `supabase/migrations/20260614000001_storage_buckets.sql`
 
 ---
 

@@ -22,9 +22,8 @@ npm install
 cp .env.example .env.local
 # Fill in the four Supabase values
 
-node scripts/run-migration.mjs   # apply all DB migrations
-node scripts/seed-demo.mjs       # create demo accounts + sample data
-node scripts/create-buckets.mjs  # create storage buckets
+node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql  # per file, oldest first (incl. storage buckets)
+node supabase/scripts/seed-demo.mjs       # create demo accounts + sample data
 
 npm run dev
 ```
@@ -281,17 +280,17 @@ Always use `createAdminClient()` for any write that touches a row not owned by t
 
 ## Scripts Reference
 
+All Supabase helper scripts live in `supabase/scripts/`:
+
 | Script | Purpose |
 |---|---|
-| `scripts/create-buckets.mjs` | Create all 5 storage buckets (idempotent) |
-| `scripts/seed-demo.mjs` | Create demo accounts + sample catalog + sample order |
-| `scripts/run-migration.mjs` | Apply SQL migrations via Supabase Management API |
-| `scripts/sync-roles.mjs` | Sync `profiles.role` → `auth.users.user_metadata.role` |
-| `scripts/inspect-user.mjs` | Debug: print auth metadata + profile row for an email |
-| `scripts/reset-password.mjs` | Admin: reset a user's password |
-| `scripts/e2e-statemachine.mjs` | Drive a test order through all 14 status transitions |
+| `supabase/scripts/run-migration.mjs` | Apply a SQL migration file via Supabase Management API |
+| `supabase/scripts/seed-demo.mjs` | Create sample catalog + sample order + notifications |
+| `supabase/scripts/sync-roles.mjs` | Sync `profiles.role` → `auth.users.user_metadata.role` |
+| `supabase/scripts/inspect-user.mjs` | Debug: print auth metadata + profile row for an email |
+| `supabase/scripts/reset-password.mjs` | Admin: reset a user's password |
 
-All scripts read from `.env.local` — make sure it exists before running.
+All scripts read from `.env.local` (preferred) or `.env` at the repo root, and must be run from the repo root.
 
 ---
 
@@ -303,8 +302,7 @@ All scripts read from `.env.local` — make sure it exists before running.
 4. Deploy — Vercel auto-detects Next.js
 5. Run migrations and seed against the production Supabase project:
    ```bash
-   # point scripts at production by setting env vars, then:
-   node scripts/run-migration.mjs
-   node scripts/seed-demo.mjs
-   node scripts/create-buckets.mjs
+   # with production creds in .env, apply each migration file (oldest first):
+   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql  # schema + storage buckets
+   node supabase/scripts/seed-demo.mjs   # optional — skip to keep production empty
    ```

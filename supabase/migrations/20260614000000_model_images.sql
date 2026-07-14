@@ -3,7 +3,7 @@ ALTER TABLE public.truck_models
   ADD COLUMN IF NOT EXISTS image_url text;
 
 -- RLS policies for the model-images storage bucket.
--- Bucket is created via scripts/create-buckets.mjs (public: true, 5MB limit).
+-- Bucket is created in 20260614000001_storage_buckets.sql (public: true, 5MB limit).
 
 CREATE POLICY "model-images: public read"
   ON storage.objects FOR SELECT
