@@ -127,7 +127,8 @@ lib/
 
 middleware.ts         ← route protection (role check on every request)
 supabase/migrations/  ← all schema migrations (run in order)
-supabase/scripts/     ← Supabase helpers: run-migration.mjs, seed-demo.mjs, etc.
+supabase/scripts/     ← Supabase helpers: run-migration.mjs, sync-roles.mjs, etc.
+supabase/seed/        ← seeds (run after migrations): internal-account (any env) + lab demo data
 ```
 
 ---

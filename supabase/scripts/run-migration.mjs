@@ -1,12 +1,20 @@
-// Apply a migration file to the remote Supabase database via Management API.
-// Usage: node supabase/scripts/run-migration.mjs supabase/migrations/<filename>.sql
+// Apply a migration file to the remote Supabase database via Management API,
+// then record it in supabase_migrations.schema_migrations — so history stays in
+// sync just like `supabase db push` (see also `supabase migration repair`).
 //
-// Reads credentials from .env.local (preferred) or .env. Needs SUPABASE_ACCESS_TOKEN
+// Usage:
+//   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql
+//   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql --record-only
+//
+//   --record-only : skip running the SQL, just MARK it as applied in history.
+//                   Use for migrations already applied another way (dashboard, etc).
+//
+// Credentials come from .env.local (preferred) or .env. Needs SUPABASE_ACCESS_TOKEN
 // and NEXT_PUBLIC_SUPABASE_URL. Project ref is taken from supabase/.temp/project-ref
 // (set by `supabase link`) if present, otherwise derived from the URL.
 
 import { readFileSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { resolve, basename } from 'node:path'
 import { loadEnv } from './_env.mjs'
 
 const env = loadEnv()
@@ -28,30 +36,70 @@ if (!accessToken) {
   process.exit(1)
 }
 
-const filePath = process.argv[2]
+const argv = process.argv.slice(2)
+const recordOnly = argv.includes('--record-only')
+const filePath = argv.find((a) => !a.startsWith('--'))
 if (!filePath) {
-  console.error('Usage: node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql')
+  console.error('Usage: node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql [--record-only]')
   process.exit(1)
 }
 
-const sql = readFileSync(resolve(process.cwd(), filePath), 'utf8')
+// Derive version + name from the filename, e.g. 20260614000001_storage_buckets.sql
+// -> version "20260614000001", name "storage_buckets".
+const file = basename(filePath)
+const version = file.split('_')[0]
+const name = file.replace(/^\d+_/, '').replace(/\.sql$/, '')
+const isMigration = /^\d+$/.test(version)
 
-console.log(`Applying: ${filePath}`)
-
-const res = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/database/query`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${accessToken}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ query: sql }),
-})
-
-const data = await res.json()
-
-if (!res.ok) {
-  console.error('Failed:', JSON.stringify(data))
+if (recordOnly && !isMigration) {
+  console.error(`--record-only needs a versioned filename (e.g. 20260614000001_name.sql), got: ${file}`)
   process.exit(1)
 }
 
-console.log(`✓ Done (${res.status})`)
+async function runSql(query) {
+  const res = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/database/query`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  })
+  return { ok: res.ok, status: res.status, data: await res.json() }
+}
+
+// 1. Apply the migration SQL (unless --record-only).
+if (recordOnly) {
+  console.log(`Record-only: not running SQL for ${filePath}`)
+} else {
+  const sql = readFileSync(resolve(process.cwd(), filePath), 'utf8')
+  console.log(`Applying: ${filePath}`)
+  const r = await runSql(sql)
+  if (!r.ok) {
+    console.error('Failed:', JSON.stringify(r.data))
+    process.exit(1)
+  }
+  console.log(`✓ Applied (${r.status})`)
+}
+
+// 2. Record it in the migration history (idempotent). Skipped for non-migration
+//    SQL files (no numeric version prefix), e.g. ad-hoc queries.
+if (!isMigration) {
+  console.log('(filename has no numeric version prefix — not recording in history)')
+  process.exit(0)
+}
+
+const record = `
+create schema if not exists supabase_migrations;
+create table if not exists supabase_migrations.schema_migrations (
+  version text not null primary key,
+  statements text[],
+  name text
+);
+insert into supabase_migrations.schema_migrations (version, name)
+values ('${version}', '${name}')
+on conflict (version) do nothing;`
+
+const r2 = await runSql(record)
+if (!r2.ok) {
+  console.error('SQL applied, but recording history FAILED:', JSON.stringify(r2.data))
+  process.exit(1)
+}
+console.log(`✓ Recorded in history: ${version} (${name})`)

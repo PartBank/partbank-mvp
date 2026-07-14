@@ -23,12 +23,13 @@ cp .env.example .env.local
 # Fill in the four Supabase values
 
 node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql  # per file, oldest first (incl. storage buckets)
-node supabase/scripts/seed-demo.mjs       # create demo accounts + sample data
+node supabase/seed/20260613080000_internal_account.mjs --pass=<password> # admin account (any env)
+node supabase/seed/20260613083000_demo_data.mjs   # LAB ONLY — workshop + buyer + catalog
 
 npm run dev
 ```
 
-Go to `http://localhost:3000` → login with one of the demo accounts.
+Go to `http://localhost:3000` → register an account (or use a demo account if your DB is seeded).
 
 ---
 
@@ -284,11 +285,12 @@ All Supabase helper scripts live in `supabase/scripts/`:
 
 | Script | Purpose |
 |---|---|
-| `supabase/scripts/run-migration.mjs` | Apply a SQL migration file via Supabase Management API |
-| `supabase/scripts/seed-demo.mjs` | Create sample catalog + sample order + notifications |
+| `supabase/scripts/run-migration.mjs` | Apply a SQL migration file (Management API) **and record it in `schema_migrations`**. `--record-only` marks a migration applied without running it. |
 | `supabase/scripts/sync-roles.mjs` | Sync `profiles.role` → `auth.users.user_metadata.role` |
 | `supabase/scripts/inspect-user.mjs` | Debug: print auth metadata + profile row for an email |
 | `supabase/scripts/reset-password.mjs` | Admin: reset a user's password |
+| `supabase/seed/20260613080000_internal_account.mjs` | Create the internal (admin) account — **any env**. Requires `--pass=<password>` |
+| `supabase/seed/20260613083000_demo_data.mjs` | **Lab only** — workshop + buyer accounts + sample catalog (idempotent; refuses when `NEXT_PUBLIC_APP_ENV=production`) |
 
 All scripts read from `.env.local` (preferred) or `.env` at the repo root, and must be run from the repo root.
 
@@ -298,11 +300,10 @@ All scripts read from `.env.local` (preferred) or `.env` at the repo root, and m
 
 1. Push to GitHub
 2. Import in [vercel.com/new](https://vercel.com/new)
-3. Add environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PROJECT_REF`
+3. Add environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`), `SUPABASE_SERVICE_ROLE_KEY`, and `NEXT_PUBLIC_APP_ENV=production` (hides the demo logins)
 4. Deploy — Vercel auto-detects Next.js
-5. Run migrations and seed against the production Supabase project:
+5. Apply migrations against the production Supabase project:
    ```bash
    # with production creds in .env, apply each migration file (oldest first):
    node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql  # schema + storage buckets
-   node supabase/scripts/seed-demo.mjs   # optional — skip to keep production empty
    ```

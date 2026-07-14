@@ -79,17 +79,9 @@ node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql
 
 Or apply them manually via the Supabase SQL editor in `supabase/migrations/`, in chronological order.
 
-### 4. Seed demo data
+> Storage buckets (`receipts`, `drawings`, `references`, `brand-logos`, `model-images`) are created by the migrations — no separate step needed.
 
-```bash
-node supabase/scripts/seed-demo.mjs
-```
-
-This creates the three demo accounts, sample truck brands/models/parts, and a sample order with notifications.
-
-> Storage buckets (`receipts`, `drawings`, `references`, `brand-logos`, `model-images`) are created by the migrations in step 3 — no separate step needed.
-
-### 5. Start the dev server
+### 4. Start the dev server
 
 ```bash
 npm run dev
@@ -113,6 +105,10 @@ Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to 
 
 1. Push to GitHub
 2. Import the repo in [vercel.com/new](https://vercel.com/new)
-3. Add the four environment variables from step 2 above
+3. Add the environment variables from step 2 above, plus `NEXT_PUBLIC_APP_ENV=production` (hides the demo logins)
 4. Deploy — Vercel auto-detects Next.js, no config needed
-5. After first deploy, run the migration and seed scripts pointed at your production Supabase project
+5. After first deploy, apply the migrations against your production Supabase project (see step 3), then create the admin account:
+   ```bash
+   node supabase/seed/20260613080000_internal_account.mjs --pass=<your-password>
+   ```
+   Do **not** run the demo-data seed (`20260613083000_demo_data.mjs`) — it's lab-only, and production stays empty except this admin account.
