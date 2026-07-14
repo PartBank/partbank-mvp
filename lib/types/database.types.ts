@@ -445,6 +445,27 @@ export type Database = {
           }
         ]
       }
+      demo_invitations: {
+        Row: {
+          key: string
+          label: string | null
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          key: string
+          label?: string | null
+          created_at?: string
+          expires_at: string
+        }
+        Update: {
+          key?: string
+          label?: string | null
+          created_at?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

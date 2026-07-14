@@ -46,7 +46,7 @@ Roles are stored in the `profiles` table (FK to `auth.users`). Route protection 
 
 **Demo accounts (seed data):**
 ```
-internal@partbank.com  /  password  /  role: internal
+internal@partbank.asia  /  password  /  role: internal
 workshop@bengkel.com   /  password  /  role: workshop
 buyer@buyer.com        /  password  /  role: customer
 ```

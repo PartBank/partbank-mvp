@@ -7,7 +7,7 @@
 //
 //   --env=lab|prod : which project to target (default: prod).
 //                    lab  → loads .env.lab
-//                    prod → loads .env.local / .env
+//                    prod → loads .env.prod / .env
 //   --record-only  : skip running the SQL, just MARK it as applied in history.
 //                    Use for migrations already applied another way (dashboard, etc).
 //
@@ -26,8 +26,8 @@ if (envArg !== 'lab' && envArg !== 'prod') {
   process.exit(1)
 }
 
-// Load the target env file (lab → .env.lab; prod → .env.local / .env).
-const env = loadEnv(envArg === 'lab' ? 'lab' : undefined)
+// Load the target env file (lab → .env.lab; prod → .env.prod / .env).
+const env = loadEnv(envArg)
 
 const projectRef = (env.NEXT_PUBLIC_SUPABASE_URL || '').match(/https:\/\/([^.]+)\./)?.[1]
 if (!projectRef) {

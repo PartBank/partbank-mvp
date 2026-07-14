@@ -40,15 +40,15 @@ Roles live in the `profiles` table (FK to `auth.users`) and are enforced by `mid
 
 The app targets **two separate Supabase projects**. Each has its own env file at the repo root, using the **same variable names** — each file is a self-contained config for one project.
 
-| Environment | Env file | Supabase project | Data | Demo logins |
+| Environment | Script env file | Supabase project | Data | Demo logins |
 |---|---|---|---|---|
-| **Lab** | `.env.lab` | sandbox | Seeded demo catalog + demo accounts | Shown on login page |
-| **Production** | `.env` (or `.env.local`) | live | Empty except the internal admin account | Hidden |
+| **Lab** | `.env.lab` | sandbox | Seeded demo catalog + demo accounts | Shown on login page (invite-gated) |
+| **Production** | `.env.prod` | live | Empty except the internal admin account | Hidden |
 
 How each consumer resolves the environment:
 
-- **The Next.js app** (dev server and Vercel) only ever reads `.env` / `.env.local` / Vercel env vars — it **never** reads `.env.lab`. To run the app against lab locally, put the lab values into `.env.local`.
-- **The CLI scripts** (`supabase/scripts/*`, `supabase/seed/*`) select the target explicitly: default loads `.env.local` → `.env` (production), and `--env=lab` loads `.env.lab`.
+- **The Next.js app** (dev server and Vercel) only ever reads `.env` / `.env.local` / Vercel env vars — it **never** reads `.env.lab` or `.env.prod`. To run the app against lab locally, put the lab values into `.env.local` (e.g. `cp .env.lab .env.local`).
+- **The CLI scripts** (`supabase/scripts/*`, `supabase/seed/*`) select the target with `--env`: `--env=lab` loads `.env.lab`, `--env=prod` loads `.env.prod` (falling back to `.env`). With no flag they load `.env.local` → `.env.prod` → `.env` (whatever's active).
 - **`NEXT_PUBLIC_APP_ENV`** controls the demo login cards on the login page: they show unless the value is exactly `production`. It also guards the demo-data seed from running against production.
 
 ### Environment variables
@@ -56,8 +56,9 @@ How each consumer resolves the environment:
 Copy `.env.example` to create each file:
 
 ```bash
-cp .env.example .env       # production
-cp .env.example .env.lab   # lab
+cp .env.example .env.prod   # production (scripts, --env=prod)
+cp .env.example .env.lab    # lab (scripts, --env=lab)
+cp .env.lab     .env.local  # local dev server (npm run dev → lab)
 ```
 
 ```env
@@ -71,7 +72,7 @@ NEXT_PUBLIC_APP_ENV=production           # "lab" or "production" (falls back to 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — Supabase dashboard → **Project Settings → API**.
 - `SUPABASE_ACCESS_TOKEN` — an account-wide token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens); required to run migrations via the Management API. The project ref is derived from the URL, so no separate `SUPABASE_PROJECT_REF` is needed.
 
-> All env files (`.env`, `.env.lab`, `.env*.local`) are git-ignored — never commit real credentials.
+> All env files (`.env`, `.env.prod`, `.env.lab`, `.env*.local`) are git-ignored — never commit real credentials.
 
 ---
 
@@ -131,25 +132,38 @@ node supabase/seed/20260613083000_demo_data.mjs
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the login page. In lab, the demo login cards let you jump straight into any role.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the login page. In lab, the demo login cards let you jump straight into any role (see [Demo access](#demo-access-lab-only) below).
 
 **Lab demo accounts** (password `password` for all):
 
 | Role | Email |
 |---|---|
-| Internal | `internal@partbank.com` |
+| Internal | `internal@partbank.asia` |
 | Workshop | `workshop@bengkel.com` |
 | Buyer | `buyer@buyer.com` |
+
+### Demo access (lab only)
+
+The one-click demo logins are gated behind a time-boxed **invitation key**. On the login page the demo box shows "invite-only" until a valid key is entered; a valid key is remembered (httpOnly cookie) until it expires, and unlocks the three demo buttons.
+
+Generate a key with the script (runs against lab by default):
+
+```bash
+node supabase/scripts/generate-invite.mjs --days=7 --label="who it's for"
+```
+
+Keys are validated server-side via `/api/demo-invite` and stored in the `demo_invitations` table (service-role only). Production isn't affected — the demo box is hidden there regardless.
 
 ---
 
 ## Useful Scripts
 
-All scripts run from the repo root and accept `--env=lab` to target the lab project (default is production).
+All scripts run from the repo root and accept `--env=lab` or `--env=prod` to pick the target project.
 
 | Script | Purpose |
 |---|---|
 | `supabase/scripts/run-migration.mjs <file>` | Apply a migration and record it in history (`--record-only` to only record) |
+| `supabase/scripts/generate-invite.mjs [--days=7] [--label=…]` | Mint a lab demo invitation key (defaults to `--env=lab`) |
 | `supabase/scripts/sync-roles.mjs` | Reconcile `profiles.role` with auth user metadata |
 | `supabase/scripts/reset-password.mjs` | Reset a user's password |
 | `supabase/scripts/inspect-user.mjs` | Inspect an auth user + profile |

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, ShieldCheck, Truck, Wrench } from 'lucide-react'
@@ -17,7 +17,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
 }
 
 const DEMO_ACCOUNTS = [
-  { role: 'internal' as const, email: 'internal@partbank.com', password: 'password', Icon: ShieldCheck },
+  { role: 'internal' as const, email: 'internal@partbank.asia', password: 'password', Icon: ShieldCheck },
   { role: 'workshop' as const, email: 'workshop@bengkel.com',  password: 'password', Icon: Wrench },
   { role: 'customer' as const, email: 'buyer@buyer.com',       password: 'password', Icon: Truck },
 ]
@@ -39,6 +39,50 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
   const [demoOpen, setDemoOpen] = useState(true)
+
+  // Invitation gate (lab only): demo logins stay locked until a valid key is entered.
+  const [inviteStatus, setInviteStatus] = useState<'checking' | 'locked' | 'unlocked'>('checking')
+  const [enteringKey, setEnteringKey] = useState(false)
+  const [inviteKey, setInviteKey] = useState('')
+  const [inviteError, setInviteError] = useState('')
+  const [inviteLoading, setInviteLoading] = useState(false)
+
+  useEffect(() => {
+    if (IS_PRODUCTION) return
+    let active = true
+    fetch('/api/demo-invite')
+      .then((r) => r.json())
+      .then((d) => active && setInviteStatus(d.valid ? 'unlocked' : 'locked'))
+      .catch(() => active && setInviteStatus('locked'))
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function submitInvite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setInviteError('')
+    setInviteLoading(true)
+    try {
+      const res = await fetch('/api/demo-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: inviteKey.trim().toUpperCase() }),
+      })
+      const d = await res.json()
+      if (d.valid) {
+        setInviteStatus('unlocked')
+        setEnteringKey(false)
+        setInviteKey('')
+      } else {
+        setInviteError('That invitation key is invalid or has expired.')
+      }
+    } catch {
+      setInviteError('Could not verify the key. Please try again.')
+    } finally {
+      setInviteLoading(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -176,35 +220,94 @@ function LoginForm() {
         </button>
 
         {demoOpen && (
-          <div className="mt-3 space-y-2">
-            {DEMO_ACCOUNTS.map((acc) => {
-              const colors = ROLE_COLORS[acc.role]
-              const isLoading = demoLoading === acc.email
-              return (
+          <div className="mt-3">
+            {inviteStatus === 'checking' && (
+              <p className="py-1 text-[11px] text-text-muted">Checking access…</p>
+            )}
+
+            {inviteStatus === 'locked' && !enteringKey && (
+              <div className="space-y-1.5">
+                <p className="text-[11px] leading-relaxed text-text-muted">
+                  Demo access is invite-only. Ask the PartBank team for an invitation key.
+                </p>
                 <button
-                  key={acc.email}
                   type="button"
-                  onClick={() => loginAsDemo(acc)}
-                  disabled={!!demoLoading}
-                  className={`group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left transition-all disabled:opacity-60 disabled:cursor-not-allowed ${colors.hover}`}
+                  onClick={() => {
+                    setEnteringKey(true)
+                    setInviteError('')
+                  }}
+                  className="text-[11px] font-medium text-navy-700 hover:underline"
                 >
-                  <div className="rounded-md bg-surface-secondary p-1.5 shrink-0 transition-colors group-hover:bg-white">
-                    <acc.Icon className={`h-3.5 w-3.5 ${colors.iconColor}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-text-primary">{ROLE_LABELS[acc.role]}</p>
-                    <p className="text-[11px] text-text-muted truncate">{acc.email}</p>
-                  </div>
-                  {isLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-text-muted shrink-0" />
-                  ) : (
-                    <span className={`text-xs font-medium shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${colors.labelColor}`}>
-                      Log in →
-                    </span>
-                  )}
+                  I have an invitation key →
                 </button>
-              )
-            })}
+              </div>
+            )}
+
+            {inviteStatus === 'locked' && enteringKey && (
+              <form onSubmit={submitInvite} className="space-y-2">
+                <Input
+                  value={inviteKey}
+                  onChange={(e) => setInviteKey(e.target.value)}
+                  placeholder="PB-XXXX-XXXX-XXXX"
+                  autoFocus
+                  disabled={inviteLoading}
+                  className="h-9 border-border bg-white text-xs font-mono uppercase tracking-wide focus:border-navy-700 focus:ring-navy-700"
+                />
+                {inviteError && <p className="text-[11px] text-red-600">{inviteError}</p>}
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="submit"
+                    disabled={inviteLoading || !inviteKey.trim()}
+                    className="h-8 rounded-lg bg-navy-900 px-3 text-xs font-medium text-white hover:bg-navy-800"
+                  >
+                    {inviteLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Unlock'}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEnteringKey(false)
+                      setInviteError('')
+                    }}
+                    className="text-[11px] text-text-muted hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {inviteStatus === 'unlocked' && (
+              <div className="space-y-2">
+                {DEMO_ACCOUNTS.map((acc) => {
+                  const colors = ROLE_COLORS[acc.role]
+                  const isLoading = demoLoading === acc.email
+                  return (
+                    <button
+                      key={acc.email}
+                      type="button"
+                      onClick={() => loginAsDemo(acc)}
+                      disabled={!!demoLoading}
+                      className={`group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left transition-all disabled:opacity-60 disabled:cursor-not-allowed ${colors.hover}`}
+                    >
+                      <div className="rounded-md bg-surface-secondary p-1.5 shrink-0 transition-colors group-hover:bg-white">
+                        <acc.Icon className={`h-3.5 w-3.5 ${colors.iconColor}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-text-primary">{ROLE_LABELS[acc.role]}</p>
+                        <p className="text-[11px] text-text-muted truncate">{acc.email}</p>
+                      </div>
+                      {isLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-text-muted shrink-0" />
+                      ) : (
+                        <span className={`text-xs font-medium shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${colors.labelColor}`}>
+                          Log in →
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

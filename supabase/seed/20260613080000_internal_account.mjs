@@ -28,7 +28,7 @@ if (password.length < 8) {
   process.exit(1)
 }
 
-const EMAIL = 'internal@partbank.com'
+const EMAIL = 'internal@partbank.asia'
 const FULL_NAME = 'Admin PartBank'
 
 const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {

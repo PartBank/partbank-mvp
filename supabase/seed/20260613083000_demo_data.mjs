@@ -64,7 +64,7 @@ for (const acc of ACCOUNTS) {
 const workshopUid = ids['workshop@bengkel.com']
 
 // Attribute parts to the internal account if it exists (run its seed first).
-const internalUser = await findUserByEmail('internal@partbank.com')
+const internalUser = await findUserByEmail('internal@partbank.asia')
 const internalId = internalUser?.id ?? null
 if (!internalId) {
   console.log('• internal account not found — parts.created_by will be null')
