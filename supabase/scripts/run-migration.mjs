@@ -3,30 +3,35 @@
 // sync just like `supabase db push` (see also `supabase migration repair`).
 //
 // Usage:
-//   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql
-//   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql --record-only
+//   node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql [--env=lab|prod] [--record-only]
 //
-//   --record-only : skip running the SQL, just MARK it as applied in history.
-//                   Use for migrations already applied another way (dashboard, etc).
+//   --env=lab|prod : which project to target (default: prod).
+//                    lab  → loads .env.lab
+//                    prod → loads .env.local / .env
+//   --record-only  : skip running the SQL, just MARK it as applied in history.
+//                    Use for migrations already applied another way (dashboard, etc).
 //
-// Credentials come from .env.local (preferred) or .env. Needs SUPABASE_ACCESS_TOKEN
-// and NEXT_PUBLIC_SUPABASE_URL. Project ref is taken from supabase/.temp/project-ref
-// (set by `supabase link`) if present, otherwise derived from the URL.
+// Each env file uses the same variable names. Needs SUPABASE_ACCESS_TOKEN (account-wide)
+// and NEXT_PUBLIC_SUPABASE_URL; the project ref is derived from the URL.
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 import { loadEnv } from './_env.mjs'
 
-const env = loadEnv()
+const argv = process.argv.slice(2)
+const recordOnly = argv.includes('--record-only')
+const envArg = (argv.find((a) => a.startsWith('--env=')) || '').split('=')[1] || 'prod'
+if (envArg !== 'lab' && envArg !== 'prod') {
+  console.error(`Invalid --env=${envArg}. Use --env=lab or --env=prod.`)
+  process.exit(1)
+}
 
-// Prefer the ref written by `supabase link`; otherwise derive it from the URL.
-const refFile = resolve(process.cwd(), 'supabase/.temp/project-ref')
-const projectRef = existsSync(refFile)
-  ? readFileSync(refFile, 'utf8').trim()
-  : (env.NEXT_PUBLIC_SUPABASE_URL || '').match(/https:\/\/([^.]+)\./)?.[1]
+// Load the target env file (lab → .env.lab; prod → .env.local / .env).
+const env = loadEnv(envArg === 'lab' ? 'lab' : undefined)
 
+const projectRef = (env.NEXT_PUBLIC_SUPABASE_URL || '').match(/https:\/\/([^.]+)\./)?.[1]
 if (!projectRef) {
-  console.error('Could not determine project ref (no supabase/.temp/project-ref and no NEXT_PUBLIC_SUPABASE_URL).')
+  console.error(`Could not determine project ref for --env=${envArg} (missing NEXT_PUBLIC_SUPABASE_URL).`)
   process.exit(1)
 }
 
@@ -36,13 +41,13 @@ if (!accessToken) {
   process.exit(1)
 }
 
-const argv = process.argv.slice(2)
-const recordOnly = argv.includes('--record-only')
 const filePath = argv.find((a) => !a.startsWith('--'))
 if (!filePath) {
-  console.error('Usage: node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql [--record-only]')
+  console.error('Usage: node supabase/scripts/run-migration.mjs supabase/migrations/<file>.sql [--env=lab|prod] [--record-only]')
   process.exit(1)
 }
+
+console.log(`Target: ${envArg.toUpperCase()} (${projectRef})`)
 
 // Derive version + name from the filename, e.g. 20260614000001_storage_buckets.sql
 // -> version "20260614000001", name "storage_buckets".
